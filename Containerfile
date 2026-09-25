@@ -1,10 +1,11 @@
 FROM ghcr.io/zirconium-dev/zirconium:latest
 
-# Keep the Nix store writable and persistent on bootc's read-only root.
-RUN set -eux; \
-    if [ -d /nix ] && [ ! -L /nix ]; then rmdir /nix; fi; \
-    ln -s /var/nix /nix; \
-    printf 'd /var/nix 0755 root root -\n' > /usr/lib/tmpfiles.d/nix.conf
+# bootc keeps /var writable across upgrades; mount it at /nix on boot.
+RUN mkdir -p /nix
+COPY systemd/nix-bind.service /usr/lib/systemd/system/nix-bind.service
+COPY systemd/nix-daemon-dependency.conf /usr/lib/systemd/system/nix-daemon.socket.d/nix-bind.conf
+COPY systemd/nix-daemon-dependency.conf /usr/lib/systemd/system/nix-daemon.service.d/nix-bind.conf
+RUN systemctl enable nix-bind.service
 
 ARG FLCLASH_VERSION=0.8.98
 ARG FLCLASH_SHA256=aa14bf9c9b2a723b426b5875f1c1dea058f709ef0411547c134e9b0dee6e44ba
