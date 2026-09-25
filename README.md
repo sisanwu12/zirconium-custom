@@ -2,6 +2,8 @@
 
 基于官方 Zirconium 的最小 bootc 派生镜像。首版只安装 FlClash 0.8.98（x86_64），RPM 下载后进行 SHA-256 校验。
 
+镜像提供 `/nix` 路径用于后续安装 Nix。由于 bootc 的系统根目录默认只读，`/nix` 指向持久可写的 `/var/nix`；首次启动时会创建空的 `/var/nix`。镜像本身不安装 Nix。
+
 推送 `main` 中的 Containerfile 或 workflow 后，GitHub Actions 会构建并发布到 `ghcr.io/sisanwu12/zirconium-custom:latest`；也可以在 Actions 页面手动运行。请先确认构建成功，再在目标机器上切换：
 
 ```bash
