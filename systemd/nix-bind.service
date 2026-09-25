@@ -1,0 +1,14 @@
+[Unit]
+Description=Bind persistent Nix store to /nix
+After=local-fs.target
+Before=nix-daemon.socket nix-daemon.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+StateDirectory=nix
+ExecStart=/usr/bin/mount --bind /var/lib/nix /nix
+ExecStop=/usr/bin/umount /nix
+
+[Install]
+WantedBy=multi-user.target
