@@ -1,11 +1,7 @@
 FROM ghcr.io/zirconium-dev/zirconium:latest
 
-# bootc keeps /var writable across upgrades; mount it at /nix on boot.
+# Determinate Nix's OSTree planner mounts persistent /var/lib/nix here.
 RUN mkdir -p /nix
-COPY systemd/nix-bind.service /usr/lib/systemd/system/nix-bind.service
-COPY systemd/nix-daemon-dependency.conf /usr/lib/systemd/system/nix-daemon.socket.d/nix-bind.conf
-COPY systemd/nix-daemon-dependency.conf /usr/lib/systemd/system/nix-daemon.service.d/nix-bind.conf
-RUN systemctl enable nix-bind.service
 
 ARG FLCLASH_VERSION=0.8.98
 ARG FLCLASH_SHA256=aa14bf9c9b2a723b426b5875f1c1dea058f709ef0411547c134e9b0dee6e44ba

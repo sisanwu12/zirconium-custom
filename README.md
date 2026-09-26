@@ -2,14 +2,14 @@
 
 基于官方 Zirconium 的最小 bootc 派生镜像。安装 FlClash 0.8.98（x86_64），RPM 下载后进行 SHA-256 校验。
 
-镜像提供空的 `/nix` 目录，启动时由 `nix-bind.service` 将持久可写的 `/var/lib/nix` 绑定到该目录。镜像本身不安装 Nix。更新镜像并重启后，安装 Nix 前可确认挂载：
+镜像提供空的 `/nix` 挂载点，本身不安装 Nix。更新镜像并重启后，使用 Determinate Nix Installer 的 `ostree` planner 安装 Nix；安装器会将持久可写的 `/var/lib/nix` 绑定到 `/nix`。安装后可确认挂载：
 
 ```bash
 findmnt /nix
-systemctl status nix-bind.service
+systemctl status nix.mount
 ```
 
-如果 `findmnt` 没有输出，先通过 `journalctl -u nix-bind.service -b` 检查原因。
+如果 `findmnt` 没有输出，先通过 `journalctl -u nix.mount -b` 检查原因。
 
 推送 `main` 中的 Containerfile 或 workflow 后，GitHub Actions 会构建并发布到 `ghcr.io/sisanwu12/zirconium-custom:latest`；也可以在 Actions 页面手动运行。请先确认构建成功，再在目标机器上切换：
 
