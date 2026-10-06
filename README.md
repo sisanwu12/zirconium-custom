@@ -1,6 +1,6 @@
 # zirconium-custom
 
-基于官方 Zirconium 的最小 bootc 派生镜像。安装 FlClash 0.8.98（x86_64），RPM 下载后进行 SHA-256 校验。
+基于官方 Zirconium 的最小 bootc 派生镜像。安装 Waydroid 和 FlClash 0.8.99（x86_64），RPM 下载后进行 SHA-256 校验。
 
 镜像提供空的 `/nix` 挂载点，本身不安装 Nix。更新镜像并重启后，使用 Determinate Nix Installer 的 `ostree` planner 安装 Nix；安装器会将持久可写的 `/var/lib/nix` 绑定到 `/nix`。安装后可确认挂载：
 
@@ -23,3 +23,21 @@ FlClash 的 TUN 仍需在程序内启用并完成其授权流程。本仓库不�
 **访问权限：** 若 `bootc switch` 提示未授权，请在 GitHub 的 Package settings 将镜像设为 public，或按 bootc 文档为宿主机配置 GHCR registry 凭据。不要将长期有效的 GitHub token 写进本仓库或命令行历史。
 
 更新 FlClash 时，同时修改 Containerfile 的版本与来自官方 Release 的 SHA-256；官方 Zirconium 更新后可手动重新运行 workflow。确认新镜像构建成功后执行 `sudo bootc upgrade` 并重启。出现问题可以用 `sudo bootc rollback` 回退。
+
+## Waydroid（无谷歌组件）
+
+镜像包含 Waydroid 软件包及其依赖。Android 镜像在宿主机首次使用时下载到持久存储，不在构建阶段初始化。更新系统并重启后执行：
+
+```bash
+sudo waydroid init -s VANILLA
+sudo systemctl enable --now waydroid-container.service
+waydroid session start
+```
+
+然后另开一个终端运行：
+
+```bash
+waydroid show-full-ui
+```
+
+`VANILLA` 不包含谷歌组件。Waydroid 会话和界面命令以普通用户运行；需要当前桌面为 Wayland 会话。
