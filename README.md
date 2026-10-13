@@ -78,6 +78,24 @@ sudo virsh -c qemu:///system net-autostart default
 
 默认网段为 `192.168.122.0/24`。如与已有网络冲突，在 virt-manager 的“连接详情 → 虚拟网络”中调整。启用 FlClash TUN 后若虚拟机无法联网，检查代理规则是否允许此网段和 `virbr0` 的流量。
 
+若安装时报 `无法连接到 virtlogd`，并提示无法打开 `/var/log/libvirt/qemu/*.log`、权限不够，检查日志目录的 SELinux 标签：
+
+```bash
+ls -ldZ /var/log/libvirt /var/log/libvirt/qemu
+sudo restorecon -RFv /var/log/libvirt
+```
+
+日志目录应为 `virt_log_t`，然后重试安装。镜像通过 systemd tmpfiles 在开机时创建日志目录并递归恢复其标签，同时修复已有目录。此修复无需重启 virtlogd。
+
+若 Windows 11 的 TPM 初始化报 `swtpm_setup` 失败，查看 `sudo tail -n 80 /var/log/swtpm/libvirt/qemu/win11-swtpm.log`。若日志包含 `Could not create directory for 'statedir': Permission denied`，修复证书状态目录后重试：
+
+```bash
+sudo install -d -m 0750 -o tss -g root /var/lib/swtpm-localca
+sudo restorecon -RFv /var/lib/swtpm-localca
+```
+
+镜像通过 systemd tmpfiles 创建该目录。证书和密钥在宿主机首次使用时生成，并持久保存在 `/var` 中。
+
 若提示连接 socket 不存在，先检查是否已更新并重启，然后启用相关服务：
 
 ```bash
