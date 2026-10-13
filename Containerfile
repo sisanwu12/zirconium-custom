@@ -44,6 +44,15 @@ RUN set -eux; \
     dnf5 clean all; \
     rm -f "${rpm_file}"
 
+# Use kitty as the desktop's preferred terminal instead of foot.
+RUN set -eux; \
+    dnf5 remove -y --no-autoremove foot; \
+    dnf5 clean all; \
+    sed -i '/^enable foot-server[.]\(service\|socket\)$/d' \
+      /usr/lib/systemd/user-preset/01-zirconium.preset; \
+    printf '%s\n' 'kitty.desktop' > /usr/share/xdg-terminal-exec/xdg-terminals.list; \
+    rm -rf /usr/share/zirconium/zdots/dot_config/foot
+
 # Exercise first-boot TPM provisioning without persisting test keys in the image.
 RUN --mount=type=tmpfs,target=/var --mount=type=tmpfs,target=/tmp --network=none \
     set -eux; \

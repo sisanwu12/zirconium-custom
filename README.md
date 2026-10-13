@@ -24,6 +24,12 @@ FlClash 的 TUN 仍需在程序内启用并完成其授权流程。本仓库不�
 
 更新 FlClash 时，同时修改 Containerfile 的版本与来自官方 Release 的 SHA-256；官方 Zirconium 更新后可手动重新运行 workflow。确认新镜像构建成功后执行 `sudo bootc upgrade` 并重启。出现问题可以用 `sudo bootc rollback` 回退。
 
+## 默认终端（kitty）
+
+镜像移除 foot、foot-server 的默认启用项及上游分发的 foot 配置，桌面终端入口优先选择 `kitty.desktop`。kitty 继续由用户的 Nix 环境管理；需确保 kitty 已安装，且 Nix profile 的 `share` 目录在 `XDG_DATA_DIRS` 中。
+
+更新镜像并重启后，可通过 `xdg-terminal-exec --print-id` 确认输出为 `kitty.desktop`。Niri 的 `Mod+T` 和 `Shift+Mod+T` 会通过该入口启动 kitty。
+
 ## KVM / QEMU 虚拟机
 
 镜像包含 QEMU/KVM、libvirt、virt-manager 图形管理器、virt-install / virsh 命令行工具和 virt-viewer。另包含 OVMF UEFI 固件、swtpm 虚拟 TPM（可用于 Windows 11）和 virtiofsd 目录共享组件。KVM 内核模块由官方 Zirconium 内核提供；宿主机 BIOS/UEFI 需要开启 AMD-V/SVM 或 Intel VT-x。
