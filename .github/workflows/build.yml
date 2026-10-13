@@ -1,4 +1,4 @@
-name: Build Zirconium with FlClash
+name: Build Zirconium Custom
 
 on:
   push:
