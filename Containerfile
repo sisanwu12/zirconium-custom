@@ -1,22 +1,22 @@
-FROM ghcr.io/zirconium-dev/zirconium:latest
+ARG BASE_IMAGE=ghcr.io/zirconium-dev/zirconium:latest
+FROM ${BASE_IMAGE}
+
+ARG CUSTOM_PACKAGES
+ARG CUSTOM_UPDATE_ID=local
+ARG CUSTOM_BUILD_TIME=local
+ARG CUSTOM_REPOSITORY=sisanwu12/zirconium-custom
+
+COPY updates/packages.txt /tmp/zirconium-custom-packages.txt
+COPY updates/notify.py /usr/bin/zirconium-custom-update-check
+COPY updates/systemd/ /usr/lib/systemd/user/
 
 # Determinate Nix's OSTree planner mounts persistent /var/lib/nix here.
 RUN mkdir -p /nix
 
 # Complete the host virtualization stack; the base image provides KVM modules.
 RUN set -eux; \
-    dnf5 install -y \
-      qemu-kvm \
-      libvirt-daemon-kvm \
-      libvirt-daemon-config-network \
-      libvirt-client \
-      virt-install \
-      virt-manager \
-      virt-viewer \
-      edk2-ovmf \
-      swtpm \
-      swtpm-tools \
-      virtiofsd; \
+    dnf5 install -y ${CUSTOM_PACKAGES:-$(cat /tmp/zirconium-custom-packages.txt)}; \
+    rm /tmp/zirconium-custom-packages.txt; \
     dnf5 clean all; \
     printf '%s\n' \
       'd /var/lib/libvirt/images 0711 root root -' \
@@ -40,9 +40,19 @@ RUN set -eux; \
       "https://github.com/chen08209/FlClash/releases/download/v${FLCLASH_VERSION}/FlClash-${FLCLASH_VERSION}-linux-amd64.rpm" \
       --output "${rpm_file}"; \
     echo "${FLCLASH_SHA256}  ${rpm_file}" | sha256sum --check; \
-    dnf5 install -y waydroid "${rpm_file}"; \
+    dnf5 install -y "${rpm_file}"; \
     dnf5 clean all; \
     rm -f "${rpm_file}"
+
+# Only the notifier runs automatically. System deployments remain manual.
+RUN set -eux; \
+    mkdir -p /usr/share/zirconium-custom; \
+    printf '%s\n' "${CUSTOM_UPDATE_ID}" > /usr/share/zirconium-custom/update-id; \
+    printf '%s\n' "${CUSTOM_BUILD_TIME}" > /usr/share/zirconium-custom/built-at; \
+    printf '%s\n' "${CUSTOM_REPOSITORY}" > /usr/share/zirconium-custom/repository; \
+    chmod 0755 /usr/bin/zirconium-custom-update-check; \
+    systemctl mask uupd.timer bootc-fetch-apply-updates.timer rpm-ostreed-automatic.timer; \
+    systemctl --global enable zirconium-custom-update-notify.timer
 
 # Use kitty as the desktop's preferred terminal instead of foot.
 RUN set -eux; \

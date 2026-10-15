@@ -1,6 +1,6 @@
 # zirconium-custom
 
-基于官方 Zirconium 的 bootc 派生镜像。安装 KVM/QEMU 虚拟化组件、Waydroid 和 FlClash 0.8.99（x86_64），FlClash RPM 下载后进行 SHA-256 校验。
+基于官方 Zirconium 的 bootc 派生镜像。安装 KVM/QEMU 虚拟化组件、Waydroid 和 FlClash（x86_64），FlClash RPM 下载后进行 SHA-256 校验。自动构建跟随 FlClash 正式版；直接本地构建的默认版本为 0.8.99。
 
 镜像提供空的 `/nix` 挂载点，本身不安装 Nix。更新镜像并重启后，使用 Determinate Nix Installer 的 `ostree` planner 安装 Nix；安装器会将持久可写的 `/var/lib/nix` 绑定到 `/nix`。安装后可确认挂载：
 
@@ -11,10 +11,12 @@ systemctl status nix.mount
 
 如果 `findmnt` 没有输出，先通过 `journalctl -u nix.mount -b` 检查原因。
 
-推送 `main` 中的 Containerfile 或 workflow 后，GitHub Actions 会构建并发布到 `ghcr.io/sisanwu12/zirconium-custom:latest`；也可以在 Actions 页面手动运行。请先确认构建成功，再在目标机器上切换：
+GitHub Actions 每六小时检测一次；官方基础镜像、定制软件版本或构建文件变化时才构建候选镜像。候选镜像构建成功满 **14 天**后，原样发布到 `stable` 和 `latest`；发布时不重新构建。首次启用这套流程，需要先等待第一个候选满 14 天。原有的 `latest` 在此之前保持原样。
+
+第一次使用时，确认 Actions 已发布 `stable`，再在目标机器上切换：
 
 ```bash
-sudo bootc switch ghcr.io/sisanwu12/zirconium-custom:latest
+sudo bootc switch ghcr.io/sisanwu12/zirconium-custom:stable
 sudo reboot
 ```
 
@@ -22,7 +24,83 @@ FlClash 的 TUN 仍需在程序内启用并完成其授权流程。本仓库不�
 
 **访问权限：** 若 `bootc switch` 提示未授权，请在 GitHub 的 Package settings 将镜像设为 public，或按 bootc 文档为宿主机配置 GHCR registry 凭据。不要将长期有效的 GitHub token 写进本仓库或命令行历史。
 
-更新 FlClash 时，同时修改 Containerfile 的版本与来自官方 Release 的 SHA-256；官方 Zirconium 更新后可手动重新运行 workflow。确认新镜像构建成功后执行 `sudo bootc upgrade` 并重启。出现问题可以用 `sudo bootc rollback` 回退。
+已经跟踪本仓库 `latest` 的电脑可以继续使用它；该标签与 `stable` 使用相同的 14 天等待策略。
+
+## 更新策略：自动检测和构建，通知后手动安装
+
+### 检测范围
+
+- 官方镜像：比较 `ghcr.io/zirconium-dev/zirconium:latest` 的 linux/amd64 manifest 摘要，并使用摘要固定本次构建的基础镜像。
+- 定制 RPM：查询 [软件清单](updates/packages.txt) 中软件及其可解析的硬依赖的可用版本。包括 Waydroid、QEMU、libvirt、swtpm 等；变更后重新构建。检测只查询软件仓库，不在宿主系统安装软件。
+- FlClash：检测官方 GitHub 最新正式 Release 的 amd64 RPM 版本和公开 SHA-256。构建时传入固定版本并校验下载文件；没有合适的 RPM 或公开校验值时，检测失败并保留现有版本，不跳过校验。
+- 本仓库：Containerfile、updates 目录或 .dockerignore 内容变化时构建。修改软件清单后，无需在脚本中再维护一份名单。
+
+定时检测仍会拉取基础镜像并启动临时容器查询 DNF 元数据；输入没有变化时跳过镜像构建和推送。硬依赖检测可能包含多个可用提供者，最终安装版本由 DNF 求解；直接安装的软件按检测到的 NEVRA 固定。Nix、Flatpak、Homebrew 应用和 Waydroid 内部 Android 镜像不属于定制镜像 RPM，需要按各自方式更新。
+
+### 候选和发布通道
+
+| 标签 | 用途 |
+| --- | --- |
+| `candidate-日期-运行编号` | 每次成功构建的留存版本，记录固定 digest 和完成时间 |
+| `testing` | 最新候选，仅用于主动试用 |
+| `stable` / `latest` | 已完成至少 14 天等待的最新未阻止候选，供日常手动更新 |
+
+例如 A 在第 1 天完成构建，第 5 天又构建 B：第 15 天先放行 A，第 19 天才放行 B。B 不会重置 A 的等待时间。放行操作只是给 A 原有的镜像摘要添加正式标签，不会重新下载软件生成另一份镜像。实际发布可能因 GitHub 调度延迟或任务失败晚于 14 天。
+
+等待时间是观察窗口，**不代表镜像已经经过两周实际运行测试，也不保证没有问题**。现有构建执行 bootc lint 和虚拟 TPM 初始化检查，不包含完整桌面或虚拟机启动测试。发现候选有问题时，在发布前到 Actions 手动运行 workflow，将其完整 `sha256:...` 填入 `block_digest`；它将不被放行。该输入不能撤回已经发布的镜像。若需要重新构建相同输入，可启用 `force_rebuild`，新候选重新等待 14 天。
+
+更新记录保存到 GitHub 的独立 `update-state` 分支的 `updates.json`，包含候选摘要、软件版本、时间和正式通道记录。不要删除或重建该分支，否则会失去等待时间和阻止记录。历史条目保存在 git 历史中；当前文件保留近期记录、正在等待的候选和正式版本。不要删除仍在等待的镜像标签或镜像内容。
+
+### 电脑端只通知
+
+新镜像内置桌面用户定时器：登录后约 2–7 分钟检查，之后约每六小时检查。只有正式通道有不同于当前安装版本、已等待至少 14 天的镜像时才通知；同一镜像每天最多提醒一次。检查仅下载公开 JSON 元数据，不运行 bootc，不需要管理员权限，不下载系统镜像，也不安装或重启。
+
+新镜像会 mask `uupd.timer`、`bootc-fetch-apply-updates.timer`、`rpm-ostreed-automatic.timer`，避免已知的系统自动更新任务后台准备部署。若当前系统已启用过自动更新，在第一次安装新镜像之前手动关闭：
+
+```bash
+sudo systemctl mask --now uupd.timer bootc-fetch-apply-updates.timer rpm-ostreed-automatic.timer
+```
+
+这不会撤销先前已经准备好的 staged 部署；先用 `sudo bootc status` 检查当前状态，避免把它误认为尚未安装的通知。
+
+若想在当前系统上立即启用通知，无需等第一份新镜像，先在本仓库执行：
+
+```bash
+bash updates/install-notifier.sh
+```
+
+此脚本只安装用户级通知程序和定时器。新镜像安装后，用户级入口自动调用镜像内的新版本程序。默认通知源是本仓库；fork 使用者需要将安装脚本的用户服务添加 `--repository 所有者/仓库`，或安装已经写入自己仓库名的新镜像。
+
+检查通知服务和手动检查：
+
+```bash
+systemctl --user list-timers --all zirconium-custom-update-notify.timer
+journalctl --user -u zirconium-custom-update-notify.service -n 50 --no-pager
+# 安装新镜像后：
+zirconium-custom-update-check
+# 当前系统尚未安装新镜像时：
+python3 updates/notify.py
+```
+
+收到通知后，保存工作、妥善关闭虚拟机，再由自己执行：
+
+```bash
+sudo bootc upgrade
+sudo bootc status
+sudo reboot
+```
+
+只有这时才下载并准备安装正式通道的镜像。手动安装命令默认跟踪 `bootc status` 中配置的镜像来源，日常使用应保持为本仓库的 `stable` 或 `latest`，不要切到官方镜像或 `testing`。出现问题可执行 `sudo bootc rollback` 后重启；系统回退不等于回退用户数据。
+
+### GitHub 设置和首次上线
+
+1. 将这些修改提交并推送到 GitHub 的默认分支 `main`。本地修改本身不会启动云端任务。
+2. 确认仓库启用了 Actions，并允许 workflow 的 `contents: write` 和 `packages: write`；workflow 会创建/维护 `update-state` 分支并发布镜像。
+3. 仓库和 GHCR Package 需要公开，通知程序才能不保存凭据地读取元数据和更新。当前通知程序不支持私有仓库认证。
+4. 手动运行一次 **Build Zirconium Custom**，在任务 Summary 中查看构建、等待和发布状态。首次候选成功后开始计时，满 14 天的下一次成功检测才会发布正式标签。
+5. 公开仓库连续 60 天没有仓库活动时，GitHub 可能停用定时 workflow；定期查看 Actions 运行状态。不要把“没有通知”当作更新服务正常的证明。
+
+流程只自动管理构建和发布；安装始终由用户决定。14 天内遇到需要立即修复的严重问题时，应另行评估是否主动使用具体候选版本，而不是假定等待总比及时修复安全。
 
 ## 默认终端（kitty）
 

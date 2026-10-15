@@ -5,11 +5,25 @@ on:
     branches: [main]
     paths:
       - Containerfile
+      - .dockerignore
       - .github/workflows/build.yml
+      - updates/**
+  schedule:
+    # Every six hours, away from the busy start of the hour (UTC).
+    - cron: '23 */6 * * *'
   workflow_dispatch:
+    inputs:
+      force_rebuild:
+        description: Rebuild unchanged inputs (starts a new 14-day wait)
+        type: boolean
+        default: false
+      block_digest:
+        description: Block an unpromoted candidate (full sha256 digest)
+        type: string
+        default: ''
 
 permissions:
-  contents: read
+  contents: write
   packages: write
 
 concurrency:
@@ -19,8 +33,11 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-24.04
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
+      - name: Check update logic
+        run: python3 -m unittest discover -s updates/tests -v
       - uses: docker/setup-buildx-action@v3
       - name: Log in to GHCR
         uses: docker/login-action@v3
@@ -28,11 +45,9 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Build and publish
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: ./Containerfile
-          platforms: linux/amd64
-          push: true
-          tags: ghcr.io/${{ github.repository }}:latest
+      - name: Detect changes, build candidates, and promote aged images
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          FORCE_REBUILD: ${{ inputs.force_rebuild }}
+          BLOCK_DIGEST: ${{ inputs.block_digest }}
+        run: python3 updates/pipeline.py

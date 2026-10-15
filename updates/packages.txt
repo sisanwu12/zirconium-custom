@@ -1,0 +1,14 @@
+qemu-kvm
+libvirt-daemon-kvm
+libvirt-daemon-config-network
+libvirt-client
+virt-install
+virt-manager
+virt-viewer
+edk2-ovmf
+swtpm
+swtpm-tools
+virtiofsd
+waydroid
+python3
+libnotify

@@ -1,0 +1,10 @@
+[Unit]
+Description=Check Zirconium Custom updates during the user session
+
+[Timer]
+OnStartupSec=2min
+OnUnitActiveSec=6h
+RandomizedDelaySec=5min
+
+[Install]
+WantedBy=timers.target

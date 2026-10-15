@@ -1,0 +1,7 @@
+[Unit]
+Description=Notify about aged Zirconium Custom updates (no installation)
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/zirconium-custom-update-check --notify
+TimeoutStartSec=90
