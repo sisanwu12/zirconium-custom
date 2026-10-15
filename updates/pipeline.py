@@ -174,8 +174,8 @@ def parse_packages(output):
         if not line.startswith("ZCUSTOM:"):
             continue
         name, nevra = line.removeprefix("ZCUSTOM:").split("|", 1)
-        if not re.fullmatch(r"[a-zA-Z0-9+_.:-]+", nevra):
-            raise ValueError("Unexpected RPM version")
+        if not re.fullmatch(r"[a-zA-Z0-9+_.:~^-]+", nevra):
+            raise ValueError("Unexpected RPM version: " + repr(nevra))
         packages.setdefault(name, set()).add(nevra)
     return {name: sorted(versions) for name, versions in sorted(packages.items())}
 
@@ -190,7 +190,7 @@ def rpm_versions(base, names):
     with tempfile.TemporaryDirectory() as directory:
         probe = Path(directory) / "Containerfile"
         output = Path(directory) / "output"
-        probe.write_text("ARG BASE_IMAGE\nFROM ${BASE_IMAGE} AS query\n"
+        probe.write_text("ARG BASE_IMAGE=" + BASE + ":latest\nFROM ${BASE_IMAGE} AS query\n"
                          "RUN mkdir -p /query && " + direct_command + " > /query/direct.txt && "
                          + dependency_command + " > /query/dependencies.txt\n"
                          "FROM scratch\nCOPY --from=query /query/ /\n")

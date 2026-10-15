@@ -129,6 +129,11 @@ class DetectionTests(unittest.TestCase):
         self.assertEqual(pipeline.parse_packages(output), {
             "libnotify": ["libnotify-0:1.0-1.x86_64"], "waydroid": ["waydroid-0:1.2-1.noarch"]})
 
+    def test_rpm_prerelease_and_snapshot_version_separators(self):
+        output = "ZCUSTOM:library|library-0:1.2~rc1^git123-1.fc44.x86_64\n"
+        self.assertEqual(pipeline.parse_packages(output)["library"],
+                         ["library-0:1.2~rc1^git123-1.fc44.x86_64"])
+
     def test_unchanged_inputs_skip_actual_build(self):
         inputs = {"base_digest": "base", "flclash": {"version": "1.0.0"},
                   "rpm": {"direct": {}, "dependencies": {}}, "recipe": "recipe"}
