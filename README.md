@@ -35,7 +35,7 @@ FlClash 的 TUN 仍需在程序内启用并完成其授权流程。本仓库不�
 - FlClash：检测官方 GitHub 最新正式 Release 的 amd64 RPM 版本和公开 SHA-256。构建时传入固定版本并校验下载文件；没有合适的 RPM 或公开校验值时，检测失败并保留现有版本，不跳过校验。
 - 本仓库：Containerfile、updates 目录或 .dockerignore 内容变化时构建。修改软件清单后，无需在脚本中再维护一份名单。
 
-定时检测仍会拉取基础镜像并启动临时容器查询 DNF 元数据；输入没有变化时跳过镜像构建和推送。硬依赖检测可能包含多个可用提供者，最终安装版本由 DNF 求解；直接安装的软件按检测到的 NEVRA 固定。Nix、Flatpak、Homebrew 应用和 Waydroid 内部 Android 镜像不属于定制镜像 RPM，需要按各自方式更新。
+定时检测仍会拉取基础镜像，并通过 BuildKit 的临时查询阶段读取 DNF 元数据，只导出版本文本；这可以避开 Docker 常规镜像存储对官方镜像层数的限制。输入没有变化时跳过定制镜像构建和推送。硬依赖检测可能包含多个可用提供者，最终安装版本由 DNF 求解；直接安装的软件按检测到的 NEVRA 固定。Nix、Flatpak、Homebrew 应用和 Waydroid 内部 Android 镜像不属于定制镜像 RPM，需要按各自方式更新。
 
 ### 候选和发布通道
 

@@ -8,6 +8,7 @@ import json
 import os
 from pathlib import Path
 import re
+import shlex
 import subprocess
 import tempfile
 import urllib.error
@@ -180,16 +181,26 @@ def parse_packages(output):
 
 
 def rpm_versions(base, names):
-    query = ["docker", "run", "--rm", "--platform", "linux/amd64",
-             "--entrypoint", "/usr/bin/dnf5", base, "--refresh", "repoquery",
-             "--available", "--arch=x86_64,noarch", "--latest-limit=1",
+    # Docker's classic image store cannot import upstream's large layer chain.
+    # Use the same BuildKit snapshotter as the OS build and export only text.
+    query = ["repoquery", "--available", "--arch=x86_64,noarch", "--latest-limit=1",
              "--queryformat=ZCUSTOM:%{name}|%{full_nevra}\\n"]
-    direct = parse_packages(run(*query, *names, capture=True))
+    direct_command = shlex.join(["dnf5", "--refresh", *query, *names])
+    dependency_command = shlex.join(["dnf5", *query, "--providers-of=requires", "--recursive", *names])
+    with tempfile.TemporaryDirectory() as directory:
+        probe = Path(directory) / "Containerfile"
+        output = Path(directory) / "output"
+        probe.write_text("ARG BASE_IMAGE\nFROM ${BASE_IMAGE} AS query\n"
+                         "RUN mkdir -p /query && " + direct_command + " > /query/direct.txt && "
+                         + dependency_command + " > /query/dependencies.txt\n"
+                         "FROM scratch\nCOPY --from=query /query/ /\n")
+        run("docker", "buildx", "build", "--file", str(probe), "--platform", "linux/amd64",
+            "--build-arg", "BASE_IMAGE=" + base, "--no-cache", "--pull",
+            "--output", "type=local,dest=" + str(output), directory)
+        direct = parse_packages((output / "direct.txt").read_text())
+        dependencies = parse_packages((output / "dependencies.txt").read_text())
     if set(names) - direct.keys():
         raise ValueError("RPM packages unavailable: " + ", ".join(sorted(set(names) - direct.keys())))
-    # Track available hard-dependency providers as well as the selected applications.
-    dependencies = parse_packages(run(*query, "--providers-of=requires", "--recursive",
-                                      *names, capture=True))
     return {"direct": direct, "dependencies": dependencies}
 
 

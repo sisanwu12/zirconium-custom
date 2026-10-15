@@ -81,6 +81,20 @@ class PromotionTests(unittest.TestCase):
 
 
 class DetectionTests(unittest.TestCase):
+    def test_rpm_probe_exports_metadata_without_loading_or_pushing_an_image(self):
+        def export(*args):
+            self.assertEqual(args[:3], ("docker", "buildx", "build"))
+            self.assertNotIn("--load", args)
+            self.assertNotIn("--push", args)
+            output = Path(args[args.index("--output") + 1].split("dest=", 1)[1])
+            output.mkdir()
+            (output / "direct.txt").write_text("ZCUSTOM:waydroid|waydroid-0:1.2-1.noarch\n")
+            (output / "dependencies.txt").write_text("ZCUSTOM:python3|python3-0:3.14-1.x86_64\n")
+        with patch.object(pipeline, "run", side_effect=export):
+            versions = pipeline.rpm_versions("base@sha256:" + "a" * 64, ["waydroid"])
+        self.assertEqual(versions["direct"]["waydroid"], ["waydroid-0:1.2-1.noarch"])
+        self.assertIn("python3", versions["dependencies"])
+
     def test_amd64_digest_selected_independently_of_other_platforms(self):
         import json
         manifest = {"manifests": [
