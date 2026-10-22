@@ -4,9 +4,10 @@ import re
 import shutil
 import sys
 import tempfile
+import urllib.error
 
 from . import chat_sources as source
-from .core import Change, capture, download, live, say
+from .core import Change, capture, download, live, say, detail
 
 
 APT = ["apt-get", "-y", "--no-remove", "-o", "Dpkg::Options::=--force-confold",
@@ -37,7 +38,7 @@ class Chat:
         installed = source.installed_packages()
         changes = []
         if self.selected is None or "apt" in self.selected:
-            say("  chat: 刷新 APT 元数据（不安装软件）")
+            detail("  chat: 刷新 APT 元数据（不安装软件）")
             source.refresh_apt()
             rows = source.apt_updates()
             if rows:
@@ -53,6 +54,7 @@ class Chat:
                     raise ValueError(f"chat:{package} 未安装")
                 continue
             latest = source.official_release(package)
+            detail(f"  {label}: 已安装 {installed[package]}；官方 {latest['Version']}")
             if source.is_newer(installed[package], latest["Version"]):
                 changes.append(Change("chat:" + package, installed[package], latest["Version"],
                                       [label, "官方 DEB；APT 将验证并安装必要依赖"], latest))
@@ -77,7 +79,21 @@ class Chat:
             raise RuntimeError("容器软件版本在预览后改变，请重新检查")
         with tempfile.TemporaryDirectory(prefix="update-chat-") as directory:
             path = Path(directory) / (package + ".deb")
-            download(change.data["url"], path, change.key)
+            if package == "linuxqq":
+                # The user may spend a long time reviewing or updating other applications.
+                # Renew authorization for the same installer immediately before downloading.
+                for attempt in range(2):
+                    url = source.qq_signed_url(change.data["source_url"])
+                    try:
+                        download(url, path, change.key)
+                        break
+                    except urllib.error.HTTPError as error:
+                        error.close()
+                        if error.code != 403 or attempt:
+                            raise
+                        detail("  QQ 下载签名失效，重新获取后重试一次")
+            else:
+                download(change.data["url"], path, change.key)
             source.validate_download(path, package, change.new, change.data.get("md5"))
             container_tmp = source.in_chat("mktemp", "-d", "/var/tmp/opt-updater.XXXXXX")
             if not re.fullmatch(r"/var/tmp/opt-updater\.[a-zA-Z0-9]+", container_tmp):

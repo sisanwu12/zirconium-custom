@@ -7,6 +7,7 @@ import re
 import shutil
 
 import notify
+from . import core
 from .core import Change, capture, live, say
 
 
@@ -89,7 +90,8 @@ class System:
                 old_inputs["flclash"] = {"version": capture(["rpm", "-q", "--qf", "%{VERSION}", flclash])}
         now = datetime.now(timezone.utc)
         previous_inputs = old_inputs
-        for item, seconds in pending_candidates(state, now, current_id, built_at, digest):
+        pending = pending_candidates(state, now, current_id, built_at, digest)
+        for item, seconds in (pending if core.VERBOSE else pending[:1]):
             if seconds:
                 days, rem = divmod(seconds, 86400)
                 hours, rem = divmod(rem, 3600)
@@ -98,10 +100,14 @@ class System:
                     f"（约 {math.ceil(seconds / 86400)} 天）完成 14 天观察")
             else:
                 say(f"  系统候选 {item['tag']}：14 天已满，等待云端发布 stable（尚不可安装）")
-            say("    变更（首项对比本机，其后对比上一候选）：")
-            for line in image_changes(previous_inputs, item.get("inputs", {})):
-                say("    " + line)
+            changes = image_changes(previous_inputs, item.get("inputs", {}))
+            if core.VERBOSE:
+                say("    变更（首项对比本机，其后对比上一候选）：")
+                for line in changes:
+                    say("    " + line)
             previous_inputs = item.get("inputs", {})
+        if not core.VERBOSE and len(pending) > 1:
+            say(f"  另有 {len(pending) - 1} 个系统候选等待发布；--verbose 查看各自倒计时和变更")
         stable = notify.available_update(state, now, current_id, built_at)
         if not stable or stable["digest"] == digest:
             return []

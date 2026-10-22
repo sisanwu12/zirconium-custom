@@ -10,6 +10,8 @@ import tarfile
 import urllib.parse
 import urllib.request
 
+from .core import detail
+
 
 CONTAINER = 'chat'
 PACKAGES = {'linuxqq': 'QQ', 'wechat': '微信', 'bytedance-feishu-stable': '飞书', 'wemeet': '腾讯会议'}
@@ -35,7 +37,7 @@ def in_chat(*args, capture=True, timeout=180):
 def ensure_container():
     running = command(['podman', 'inspect', '--format', '{{.State.Running}}', CONTAINER])
     if running != 'true':
-        print('chat: starting the existing container to check packages', flush=True)
+        detail('chat: starting the existing container to check packages')
         command(['podman', 'start', CONTAINER])
     if in_chat('dpkg', '--print-architecture') != 'amd64':
         raise RuntimeError('chat must use amd64 DEB packages')
@@ -56,14 +58,40 @@ def is_newer(installed, latest):
     return result.returncode == 0
 
 
-def fetch(url, limit=2 * 1024 * 1024):
+def fetch(url, limit=2 * 1024 * 1024, *, data=None, headers=None):
     if urllib.parse.urlsplit(url).scheme != 'https':
         raise ValueError('Official downloads must use HTTPS')
-    with urllib.request.urlopen(urllib.request.Request(url, headers=HEADERS), timeout=30) as response:
+    with urllib.request.urlopen(urllib.request.Request(url, data=data, headers={**HEADERS, **(headers or {})}), timeout=30) as response:
+        if urllib.parse.urlsplit(response.geturl()).scheme != 'https':
+            raise ValueError('Official metadata redirected away from HTTPS')
         data = response.read(limit + 1)
     if len(data) > limit:
         raise ValueError('Official metadata exceeds size limit')
     return data
+
+
+def qq_signed_url(url):
+    """Use the vendor's public download API; signatures are intentionally short-lived.
+
+    Keep the reviewed installer path fixed when renewing, never resolve latest again.
+    """
+    original = urllib.parse.urlsplit(url)
+    if (original.scheme != 'https' or original.netloc != 'qqdl.gtimg.cn'
+            or not original.path.startswith('/qqfile/') or original.fragment):
+        raise ValueError('Unexpected QQ official download URL')
+    unsigned = urllib.parse.urlunsplit(original._replace(query=''))
+    endpoint = 'https://im.qq.com/http2rpc/gotrpc/noauth/trpc.qqntv2.urlsign.UrlSign/GetSign'
+    result = json.loads(fetch(endpoint, data=json.dumps({'url': unsigned}).encode(), headers={
+        'Content-Type': 'application/json', 'Origin': 'https://im.qq.com', 'Referer': 'https://im.qq.com/',
+        'x-oidb': json.dumps({'uint32_command': '0x9b8e', 'uint32_service_type': 1}),
+    }))
+    signed = (result.get('data') or {}).get('url', '')
+    parsed = urllib.parse.urlsplit(signed)
+    if (result.get('retcode') != 0 or parsed.scheme != 'https' or parsed.netloc != original.netloc
+            or parsed.path != original.path or parsed.fragment
+            or not {'sign', 't'} <= urllib.parse.parse_qs(parsed.query).keys()):
+        raise ValueError('QQ signing API returned an invalid URL or changed the installer')
+    return signed
 
 
 def vendor_source(package):
@@ -143,6 +171,9 @@ def read_deb_control(stream):
 def official_release(package):
     source = vendor_source(package)
     url = source['url']
+    if package == 'linuxqq':
+        source['source_url'] = url
+        url = qq_signed_url(url)
     if urllib.parse.urlsplit(url).scheme != 'https':
         raise ValueError('Official download must use HTTPS')
     headers = {**HEADERS, 'Range': 'bytes=0-1048575'}

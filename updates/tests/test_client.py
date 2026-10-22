@@ -8,6 +8,7 @@ import sys
 import tarfile
 import tempfile
 import unittest
+import urllib.error
 from unittest.mock import Mock, patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -25,6 +26,22 @@ def candidate(age, number=1, **kwargs):
 
 
 class WorkflowTests(unittest.TestCase):
+    def test_default_plan_is_compact_but_verbose_preserves_every_detail(self):
+        change = core.Change("home-manager", "hash1", "hash2",
+                             [f"pkg{i}: 1 → 2" for i in range(12)] + ["flake/nixpkgs: old-hash → new-hash"])
+        core.configure_output()
+        self.addCleanup(core.configure_output)
+        cli.show_plan([(self.a, change)], [])
+        self.assertIn("另有 8 项细节", self.output.getvalue())
+        self.assertNotIn("pkg5:", self.output.getvalue())
+        self.assertNotIn("old-hash", self.output.getvalue())
+        self.output.seek(0)
+        self.output.truncate()
+        core.configure_output(True)
+        cli.show_plan([(self.a, change)], [])
+        self.assertIn("pkg11:", self.output.getvalue())
+        self.assertIn("old-hash", self.output.getvalue())
+
     def setUp(self):
         self.a, self.b, self.os = Mock(), Mock(), Mock()
         self.app = core.Change("code", "1", "2")
@@ -229,6 +246,19 @@ class DownloadTests(unittest.TestCase):
 
 
 class HomeManagerTests(unittest.TestCase):
+    def test_runtime_already_latest_format_is_not_a_check_failure(self):
+        text = ("Determinate Nixd daemon version: 3.23.3\n"
+                "Determinate Nixd client version: 3.23.3\n"
+                "You are running the latest version of Determinate Nix.\n")
+        with patch.object(nix, "capture", side_effect=["nix (Determinate Nix 3.23.3) 2.35.3", text]):
+            self.assertEqual(nix.NixRuntime().plan(), [])
+
+    def test_missing_latest_version_does_not_hide_network_or_path_problem(self):
+        for text in ("Failed to check latest version", "You are running the latest version of Determinate Nix."):
+            with patch.object(nix, "capture", side_effect=["nix (Determinate Nix 3.23.3) 2.35.3", text]), \
+                 self.assertRaises(ValueError):
+                nix.NixRuntime().plan()
+
     def test_runtime_drift_prevents_sudo_and_downgrade(self):
         with patch.object(nix, "capture", return_value="nix (Determinate Nix 5.0.0) 2.99"), \
              patch.object(nix, "live") as live, self.assertRaises(RuntimeError):
@@ -305,6 +335,43 @@ class HomeManagerTests(unittest.TestCase):
 
 
 class ProgressTests(unittest.TestCase):
+    def setUp(self):
+        core.configure_output()
+        self.addCleanup(core.configure_output)
+
+    def test_progress_reuses_terminal_row_and_prints_one_completion_line(self):
+        with patch("sys.stdout", new_callable=io.StringIO) as output, \
+             patch.object(output, "isatty", return_value=True), \
+             patch.object(core.time, "monotonic", side_effect=range(1000)):
+            progress = core.Progress("软件 下载", 100)
+            for value in range(100):
+                progress.show(value)
+            self.assertEqual(output.getvalue().count("\n"), 0)
+            progress.show(100, finished=True)
+            self.assertEqual(output.getvalue().count("\n"), 1)
+            self.assertIn("\r\033[2K", output.getvalue())
+            self.assertIn("100%", output.getvalue())
+
+    def test_redirected_progress_only_emits_completion(self):
+        with patch("sys.stdout", new_callable=io.StringIO) as output:
+            progress = core.Progress("下载", 100)
+            for value in range(100):
+                progress.show(value)
+            self.assertEqual(output.getvalue(), "")
+            progress.show(100, finished=True)
+            self.assertEqual(output.getvalue().count("\n"), 1)
+            self.assertNotIn("\r", output.getvalue())
+
+    def test_narrow_terminal_accounts_for_chinese_width_and_clears_before_errors(self):
+        import os
+        with patch("sys.stdout", new_callable=io.StringIO) as output, \
+             patch.object(output, "isatty", return_value=True), \
+             patch.object(core.shutil, "get_terminal_size", return_value=os.terminal_size((10, 24))):
+            core.status("中" * 20)
+            self.assertEqual(output.getvalue(), "\r\033[2K" + "中" * 4)
+            core.say("失败")
+            self.assertTrue(output.getvalue().endswith("\r\033[2K失败\n"))
+
     def test_nix_transfer_uses_byte_counters_and_parent_package(self):
         renderer = NixProgress()
         events = [
@@ -312,7 +379,9 @@ class ProgressTests(unittest.TestCase):
             {"action": "start", "id": 2, "type": 101, "parent": 1},
             {"action": "result", "id": 2, "type": 105, "fields": [50, 100, 0, 0]},
             {"action": "stop", "id": 2}]
-        with patch("sys.stdout", new_callable=io.StringIO) as output:
+        with patch("sys.stdout", new_callable=io.StringIO) as output, \
+             patch.object(output, "isatty", return_value=True), \
+             patch.object(core.time, "monotonic", side_effect=range(1000)):
             for event in events:
                 renderer.line("@nix " + json.dumps(event))
         self.assertIn("kitty-1.0 下载/写入: 50%", output.getvalue())
@@ -337,6 +406,65 @@ class ProgressTests(unittest.TestCase):
 
 
 class ChatTests(unittest.TestCase):
+    URL = "https://qqdl.gtimg.cn/qqfile/QQNTV2/release/QQ_3.2.34_amd64.deb"
+
+    def test_qq_signing_matches_official_api_and_keeps_same_installer(self):
+        signed = self.URL + "?sign=abc&t=123"
+        with patch.object(chat.source, "fetch", return_value=json.dumps({"retcode": 0, "data": {"url": signed}}).encode()) as fetch:
+            self.assertEqual(chat.source.qq_signed_url(self.URL), signed)
+        args, kwargs = fetch.call_args
+        self.assertEqual(args[0], "https://im.qq.com/http2rpc/gotrpc/noauth/trpc.qqntv2.urlsign.UrlSign/GetSign")
+        self.assertEqual(json.loads(kwargs["data"]), {"url": self.URL})
+        self.assertEqual(json.loads(kwargs["headers"]["x-oidb"])["uint32_command"], "0x9b8e")
+
+    def test_qq_signing_rejects_wrong_host_path_missing_signature_or_api_failure(self):
+        for url, code in [(self.URL.replace("qqdl.gtimg.cn", "example.org") + "?sign=x&t=1", 0),
+                          (self.URL.replace("3.2.34", "9.9.9") + "?sign=x&t=1", 0),
+                          (self.URL, 0), (self.URL + "?sign=x&t=1", 1)]:
+            with self.subTest(url=url, code=code), \
+                 patch.object(chat.source, "fetch", return_value=json.dumps({"retcode": code, "data": {"url": url}}).encode()), \
+                 self.assertRaises(ValueError):
+                chat.source.qq_signed_url(self.URL)
+
+    def test_qq_check_reads_signed_deb_and_remembers_unsigned_source(self):
+        signed = self.URL + "?sign=x&t=1"
+        response = Mock()
+        response.geturl.return_value = signed
+        response.__enter__ = Mock(return_value=response)
+        response.__exit__ = Mock(return_value=False)
+        with patch.object(chat.source, "vendor_source", return_value={"url": self.URL}), \
+             patch.object(chat.source, "qq_signed_url", return_value=signed), \
+             patch.object(chat.source.urllib.request, "urlopen", return_value=response) as open_, \
+             patch.object(chat.source, "read_deb_control", return_value={"Package": "linuxqq", "Version": "3.2.34", "Architecture": "amd64"}):
+            result = chat.source.official_release("linuxqq")
+        self.assertEqual(open_.call_args.args[0].full_url, signed)
+        self.assertEqual(result["source_url"], self.URL)
+
+    def test_qq_apply_renews_same_url_and_retries_403_once_without_resolving_latest(self):
+        provider = chat.Chat(["linuxqq"])
+        change = core.Change("chat:linuxqq", "1", "2", data={"source_url": self.URL, "url": "expired"})
+        with patch.object(chat.source, "installed_packages", side_effect=[{"linuxqq": "1"}, {"linuxqq": "2"}]), \
+             patch.object(chat.source, "qq_signed_url", side_effect=["fresh-1", "fresh-2"]) as sign, \
+             patch.object(chat.source, "vendor_source") as latest, \
+             patch.object(chat, "download", side_effect=[urllib.error.HTTPError("url", 403, "expired", {}, None), None]) as download, \
+             patch.object(chat.source, "validate_download") as validate, \
+             patch.object(chat.source, "in_chat", return_value="/var/tmp/opt-updater.ABC"), \
+             patch.object(chat, "live"), patch("sys.stdout", io.StringIO()):
+            provider.apply(change)
+        self.assertEqual([c.args[0] for c in sign.call_args_list], [self.URL, self.URL])
+        self.assertEqual([c.args[0] for c in download.call_args_list], ["fresh-1", "fresh-2"])
+        latest.assert_not_called()
+        self.assertEqual(validate.call_args.args[1:3], ("linuxqq", "2"))
+
+    def test_qq_second_403_stops_before_container_install(self):
+        with patch.object(chat.source, "installed_packages", return_value={"linuxqq": "1"}), \
+             patch.object(chat.source, "qq_signed_url", return_value="signed") as sign, \
+             patch.object(chat, "download", side_effect=urllib.error.HTTPError("url", 403, "denied", {}, None)), \
+             patch.object(chat.source, "in_chat") as container, self.assertRaises(urllib.error.HTTPError):
+            chat.Chat(["linuxqq"]).apply(core.Change("chat:linuxqq", "1", "2", data={"source_url": self.URL}))
+        self.assertEqual(sign.call_count, 2)
+        container.assert_not_called()
+
     def test_vendor_failure_does_not_discard_other_plans(self):
         good, bad = Mock(), Mock()
         good.key, bad.key = "chat:wechat", "chat:feishu"

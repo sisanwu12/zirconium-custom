@@ -6,7 +6,10 @@ import os
 from pathlib import Path
 import subprocess
 import sys
+import shutil
+import threading
 import time
+import unicodedata
 import urllib.parse
 import urllib.request
 
@@ -21,10 +24,72 @@ class Change:
     system: bool = False
 
 
-def say(message):
+VERBOSE = False
+_output_lock = threading.RLock()
+_status_stream = None
+_last_status = 0.0
+
+
+def clean_text(message):
     # Metadata is untrusted terminal text, not terminal control sequences.
-    print("".join(c if c in "\n\t" or ord(c) >= 32 and ord(c) != 127 else "?"
-                  for c in str(message)), flush=True)
+    return "".join(c if c in "\n\t" or not unicodedata.category(c).startswith("C") else "?"
+                   for c in str(message))
+
+
+def clear_status():
+    global _status_stream
+    with _output_lock:
+        if _status_stream is sys.stdout:
+            sys.stdout.write("\r\033[2K")
+            sys.stdout.flush()
+        _status_stream = None
+
+
+def configure_output(verbose=False):
+    global VERBOSE, _last_status
+    clear_status()
+    VERBOSE = verbose
+    _last_status = 0.0
+
+
+def say(message):
+    with _output_lock:
+        clear_status()
+        print(clean_text(message), flush=True)
+
+
+def detail(message):
+    if VERBOSE:
+        say(message)
+
+
+def status(message, *, finished=False):
+    """One shared, throttled terminal row, including concurrent Nix activities.
+
+    Redirected logs contain completion lines only; never carriage-return spam.
+    Leave one column unused so narrow terminals cannot wrap the status row.
+    """
+    global _status_stream, _last_status
+    with _output_lock:
+        if finished:
+            say(message)
+            return
+        if not sys.stdout.isatty():
+            return
+        now = time.monotonic()
+        if _status_stream is sys.stdout and now - _last_status < .15:
+            return
+        width = max(1, shutil.get_terminal_size(fallback=(80, 24)).columns - 1)
+        rendered, used = [], 0
+        for char in clean_text(message).replace("\n", " ").replace("\t", " "):
+            cells = 0 if unicodedata.combining(char) else 2 if unicodedata.east_asian_width(char) in "WF" else 1
+            if used + cells > width:
+                break
+            rendered.append(char)
+            used += cells
+        sys.stdout.write("\r\033[2K" + "".join(rendered))
+        sys.stdout.flush()
+        _status_stream, _last_status = sys.stdout, now
 
 
 def capture(args, *, cwd=None, timeout=180, env=None):
@@ -38,7 +103,8 @@ def capture(args, *, cwd=None, timeout=180, env=None):
 
 def live(args, *, cwd=None, env=None):
     """Inherit the terminal, including native percentage bars and sudo prompts."""
-    say("执行：" + " ".join(map(str, args)))
+    clear_status()
+    detail("执行：" + " ".join(map(str, args)))
     process = subprocess.Popen([str(x) for x in args], cwd=cwd, env=env)
     try:
         code = process.wait()
@@ -81,7 +147,7 @@ class Progress:
 
     def show(self, done, *, finished=False):
         percent = min(100 if finished else 99, int(done * 100 / self.total)) if self.total else None
-        bucket = percent // (1 if sys.stdout.isatty() else 10) if percent is not None else int(done / 10485760)
+        bucket = percent if percent is not None else int(done / 1048576)
         if bucket == self.last and not finished:
             return
         self.last = bucket
@@ -89,8 +155,8 @@ class Progress:
         amount = f"{done / 1048576:.1f} MiB"
         if self.total:
             amount += f" / {self.total / 1048576:.1f} MiB"
-        status = f"{percent}%" if percent is not None else "总量未知"
-        say(f"  {self.label}: {status} · {amount} · {done / elapsed / 1048576:.1f} MiB/s")
+        state = f"{percent}%" if percent is not None else "完成" if finished else "总量未知"
+        status(f"  {self.label}: {state} · {amount} · {done / elapsed / 1048576:.1f} MiB/s", finished=finished)
 
 
 def download(url, path, label, expected=None):
@@ -121,6 +187,7 @@ def atomic_link(link, target):
 
 
 def confirm(prompt):
+    clear_status()
     if not sys.stdin.isatty():
         say("非交互终端：未授权安装。请在终端运行 update，或使用 --check 查看。")
         return False

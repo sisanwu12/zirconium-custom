@@ -10,7 +10,8 @@ import tempfile
 import threading
 import time
 
-from .core import capture, config_home, confirm, say
+from . import core
+from .core import capture, config_home, confirm, say, detail, status, clear_status
 from .local import Local, SPECS
 from .chat import Chat
 from .chat_sources import PACKAGES
@@ -54,40 +55,57 @@ def providers(selected, workspace, config):
 
 def collect(backends, all_mode):
     plan, errors = [], []
+    say("检查更新…")
     for backend in backends:
-        say(f"\n检查 {backend.key}…")
+        detail(f"检查 {backend.key}…")
+        status(f"  检查 {backend.key}…")
         stop = threading.Event()
         started = time.monotonic()
         def heartbeat():
             while not stop.wait(20):
-                say(f"  {backend.key} 仍在检查，已用时 {int(time.monotonic() - started)} 秒…")
+                status(f"  检查 {backend.key} · {int(time.monotonic() - started)} 秒…")
         thread = threading.Thread(target=heartbeat, daemon=True)
         thread.start()
         try:
             if not backend.available():
                 if not all_mode:
                     raise ValueError("该更新目标未安装或环境不适用")
-                say("  未安装/不适用，跳过")
+                detail("  未安装/不适用，跳过")
                 continue
             changes = backend.plan()
             if not changes:
-                say("  无可执行更新")
+                detail("  无可执行更新")
             plan.extend((backend, change) for change in changes)
         except Exception as error:
             errors.append(backend.key)
-            say(f"  检查失败：{error}")
+            say(f"  {backend.key} 检查失败：{error}")
         finally:
             stop.set()
             thread.join()
+    clear_status()
     return plan, errors
 
 
 def show_plan(plan, errors):
     say("\n更新计划（尚未安装）")
     for _, change in plan:
-        say(f"  {change.key}: {change.old} → {change.new}")
-        for line in change.details:
+        if change.key == "home-manager" and not core.VERBOSE:
+            say("  home-manager: 更新完整配置与软件")
+        elif change.system and not core.VERBOSE:
+            say(f"  system: {change.new}（最后单独确认并授权 sudo）")
+        else:
+            say(f"  {change.key}: {change.old} → {change.new}")
+        lines = change.details
+        if not core.VERBOSE:
+            # Keep user-visible package changes; hashes and rebuilds remain in --verbose.
+            visible = [s for s in lines if not s.startswith(("flake/", "发布说明：", "目标："))
+                       and "（依赖/构建变化）" not in s and "构建变化 →" not in s
+                       and "sha256:" not in s]
+            lines = visible[:5]
+        for line in lines:
             say("    " + line)
+        if len(lines) < len(change.details):
+            say(f"    另有 {len(change.details) - len(lines)} 项细节；--verbose 查看全部")
     if not plan:
         say("  没有可执行的更新。")
     if errors:
@@ -133,8 +151,10 @@ def main(argv=None):
     parser.add_argument("--notify", action="store_true", help="只检查并发送桌面通知，兼容旧定时器")
     parser.add_argument("--only", action="append", default=[], help="兼容旧用法；可重复指定")
     parser.add_argument("--list", action="store_true", help="列出支持的更新目标")
+    parser.add_argument("--verbose", "-v", action="store_true", help="显示完整变更、命令及构建日志")
     parser.add_argument("--config", type=Path, default=config_home() / "zirconium-updater/config.json")
     args = parser.parse_args(argv)
+    core.configure_output(args.verbose)
     if args.list:
         say("\n".join(KEYS + ["chat:" + p for p in [*PACKAGES, "apt"]]))
         say("别名：" + ", ".join(f"{a}={b}" for a, b in ALIASES.items()))

@@ -6,8 +6,10 @@ fall back to text so a newer Nix release does not silently hide diagnostics.
 import json
 from pathlib import Path
 import subprocess
+from collections import deque
 
-from .core import Progress, say
+from . import core
+from .core import Progress, say, detail, status, clear_status
 
 
 class NixProgress:
@@ -15,6 +17,7 @@ class NixProgress:
         self.activities = {}
         self.transfers = {}
         self.counters = {}
+        self.logs = deque(maxlen=30)
 
     def line(self, line):
         if not line.startswith("@nix "):
@@ -30,9 +33,12 @@ class NixProgress:
         if action == "start":
             self.activities[identity] = event
             if event.get("type") in (100, 105, 108):
-                say("  Nix: " + (event.get("text") or self.label(identity)))
+                status("  Nix: " + (event.get("text") or self.label(identity)))
         elif action == "msg":
-            say(event.get("msg", ""))
+            message = event.get("msg", "")
+            self.logs.append(message)
+            if event.get("level", 0) <= 1 or core.VERBOSE:
+                say(message)
         elif action == "result":
             fields = event.get("fields", [])
             kind = event.get("type")
@@ -47,9 +53,14 @@ class NixProgress:
                     value = (done, total)
                     if self.counters.get(identity) != value:
                         self.counters[identity] = value
-                        say(f"  Nix 已完成任务：{done}/{total} ({min(100, done * 100 // total)}%)")
+                        status(f"  Nix 已完成任务：{done}/{total} ({min(100, done * 100 // total)}%)")
             elif kind in (101, 104, 107) and fields:
-                say(f"  {self.label(identity)}: {fields[0]}")
+                message = f"  {self.label(identity)}: {fields[0]}"
+                self.logs.append(message)
+                if kind == 104:
+                    status(message)
+                else:
+                    detail(message)
         elif action == "stop":
             # stop also occurs on failure/cancellation; never infer success from it.
             pass
@@ -67,7 +78,8 @@ class NixProgress:
 
 
 def run_nix(args):
-    say("执行：" + " ".join(args))
+    clear_status()
+    detail("执行：" + " ".join(args))
     renderer = NixProgress()
     process = subprocess.Popen([*args, "--log-format", "internal-json", "-L"],
                                stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
@@ -76,6 +88,8 @@ def run_nix(args):
             renderer.line(line)
         code = process.wait()
         if code:
+            if not core.VERBOSE and renderer.logs:
+                say("Nix 最近日志：\n" + "\n".join(renderer.logs))
             raise RuntimeError(f"Nix 下载/构建失败 ({code})，未激活新配置")
     except BaseException:
         if process.poll() is None:
@@ -87,5 +101,6 @@ def run_nix(args):
                 process.wait()
         raise
     finally:
+        clear_status()
         process.stdout.close()
     say("  Nix 下载/构建任务：100%")

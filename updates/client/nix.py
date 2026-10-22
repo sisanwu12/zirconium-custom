@@ -6,7 +6,7 @@ from pathlib import Path
 import re
 import shutil
 
-from .core import Change, capture, config_home, live, say, versions
+from .core import Change, capture, config_home, live, say, versions, detail
 from .nix_progress import run_nix
 
 
@@ -65,7 +65,7 @@ class HomeManager:
         self.original_lock = lock.read_bytes()
         self.original_hash = before
         self.generation = str(self.profile.resolve())
-        say("  Home Manager: 在临时副本解析新锁文件和软件版本；可能下载 Nix 求值元数据")
+        detail("  Home Manager: 在临时副本解析新锁文件和软件版本；可能下载 Nix 求值元数据")
         capture([*NIX, "flake", "update", "--flake", "path:" + str(self.snapshot)], timeout=900)
         ref = f"path:{self.snapshot}#homeConfigurations.{self.output}"
         self.ref = ref
@@ -138,6 +138,10 @@ class NixRuntime:
             text = capture(["determinate-nixd", "version"], timeout=90)
             old = re.search(r"Determinate Nix ([0-9.]+)", installed)
             latest = re.search(r"Latest version:\s*v?([0-9.]+)", text)
+            if old and not latest and "You are running the latest version of Determinate Nix." in text:
+                reported = re.findall(r"^Determinate Nixd (?:daemon|client) version:\s*([0-9.]+)\s*$", text, re.MULTILINE)
+                if len(reported) == 2 and all(version == old[1] for version in reported):
+                    return []
             if not old or not latest:
                 raise ValueError("无法读取 Determinate Nix 最新版本；未假定已是最新")
             old, new = old[1], latest[1]
