@@ -261,6 +261,7 @@ def build_candidate(image, inputs, input_id, repository):
         build_args = {"BASE_IMAGE": BASE + "@" + inputs["base_digest"],
                       "CUSTOM_PACKAGES": packages, "CUSTOM_UPDATE_ID": input_id,
                       "CUSTOM_BUILD_TIME": stamp(started), "CUSTOM_REPOSITORY": repository,
+                      "CUSTOM_UPDATE_INPUTS": json.dumps(inputs, separators=(",", ":")),
                       "FLCLASH_VERSION": inputs["flclash"]["version"],
                       "FLCLASH_SHA256": inputs["flclash"]["sha256"]}
         for name, value in build_args.items():

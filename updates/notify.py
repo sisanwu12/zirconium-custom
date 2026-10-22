@@ -90,7 +90,7 @@ def main():
     message = (f"定制镜像 {update['tag']} 已观察至少 14 天。\n"
                f"构建时间：{local_time}\n"
                f"FlClash：{update['inputs']['flclash']['version']}\n"
-               "请在终端手动执行 sudo bootc upgrade，完成后自行重启。")
+               "请在终端执行 update system，预览并单独确认系统更新，完成后自行重启。")
     print(message)
     if not args.notify:
         return

@@ -5,10 +5,14 @@ ARG CUSTOM_PACKAGES
 ARG CUSTOM_UPDATE_ID=local
 ARG CUSTOM_BUILD_TIME=local
 ARG CUSTOM_REPOSITORY=sisanwu12/zirconium-custom
+ARG CUSTOM_UPDATE_INPUTS={}
 
 COPY updates/packages.txt /tmp/zirconium-custom-packages.txt
 COPY updates/notify.py /usr/bin/zirconium-custom-update-check
 COPY updates/systemd/ /usr/lib/systemd/user/
+COPY updates/client/ /usr/lib/zirconium-updater/client/
+COPY updates/notify.py /usr/lib/zirconium-updater/notify.py
+COPY updates/update /usr/bin/update
 
 # Determinate Nix's OSTree planner mounts persistent /var/lib/nix here.
 RUN mkdir -p /nix
@@ -50,6 +54,8 @@ RUN set -eux; \
     printf '%s\n' "${CUSTOM_UPDATE_ID}" > /usr/share/zirconium-custom/update-id; \
     printf '%s\n' "${CUSTOM_BUILD_TIME}" > /usr/share/zirconium-custom/built-at; \
     printf '%s\n' "${CUSTOM_REPOSITORY}" > /usr/share/zirconium-custom/repository; \
+    printf '%s\n' "${CUSTOM_UPDATE_INPUTS}" > /usr/share/zirconium-custom/update-inputs.json; \
+    chmod 0755 /usr/bin/update; \
     chmod 0755 /usr/bin/zirconium-custom-update-check; \
     systemctl mask uupd.timer bootc-fetch-apply-updates.timer rpm-ostreed-automatic.timer; \
     systemctl --global enable zirconium-custom-update-notify.timer

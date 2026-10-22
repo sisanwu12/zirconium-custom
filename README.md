@@ -26,6 +26,23 @@ FlClash 的 TUN 仍需在程序内启用并完成其授权流程。本仓库不�
 
 已经跟踪本仓库 `latest` 的电脑可以继续使用它；该标签与 `stable` 使用相同的 14 天等待策略。
 
+## 统一交互式更新
+
+新版 `update` 先显示软件、Home Manager、Nix 和系统变更，再询问是否安装；系统候选未满 14 天时也显示倒计时。系统更新最后单独确认并重新授权 sudo，不自动重启。
+
+```bash
+# 立即在当前用户安装新版入口（保留旧脚本备份，不更新软件）
+bash updates/install-update.sh
+update --check
+update
+update code xmcl              # 仅选择这些应用
+update wechat feishu           # chat 容器里的单独应用
+update home-manager nix        # Home Manager 完整配置和 Nix 自身
+update system                  # 仅系统；仍需独立确认与 sudo
+```
+
+详细进度、更新范围、Home Manager 事务边界、配置、恢复和开发说明见 [统一 update 客户端](updates/README.md)。固定系统版本后仍通过 `update` 获取后续正式镜像；不要依赖直接 `bootc upgrade` 跨越固定 digest。
+
 ## 更新策略：自动检测和构建，通知后手动安装
 
 ### 检测范围
@@ -35,7 +52,7 @@ FlClash 的 TUN 仍需在程序内启用并完成其授权流程。本仓库不�
 - FlClash：检测官方 GitHub 最新正式 Release 的 amd64 RPM 版本和公开 SHA-256。构建时传入固定版本并校验下载文件；没有合适的 RPM 或公开校验值时，检测失败并保留现有版本，不跳过校验。
 - 本仓库：Containerfile、updates 目录或 .dockerignore 内容变化时构建。修改软件清单后，无需在脚本中再维护一份名单。
 
-定时检测仍会拉取基础镜像，并通过 BuildKit 的临时查询阶段读取 DNF 元数据，只导出版本文本；这可以避开 Docker 常规镜像存储对官方镜像层数的限制。输入没有变化时跳过定制镜像构建和推送。硬依赖检测可能包含多个可用提供者，最终安装版本由 DNF 求解；直接安装的软件按检测到的 NEVRA 固定。Nix、Flatpak、Homebrew 应用和 Waydroid 内部 Android 镜像不属于定制镜像 RPM，需要按各自方式更新。
+定时检测仍会拉取基础镜像，并通过 BuildKit 的临时查询阶段读取 DNF 元数据，只导出版本文本；这可以避开 Docker 常规镜像存储对官方镜像层数的限制。输入没有变化时跳过定制镜像构建和推送。硬依赖检测可能包含多个可用提供者，最终安装版本由 DNF 求解；直接安装的软件按检测到的 NEVRA 固定。Nix 和 Home Manager 由电脑端统一 `update` 单独管理，不属于定制镜像 RPM。Flatpak、Homebrew 应用和 Waydroid 内部 Android 镜像仍按各自方式更新。
 
 ### 候选和发布通道
 
@@ -85,12 +102,12 @@ python3 updates/notify.py
 收到通知后，保存工作、妥善关闭虚拟机，再由自己执行：
 
 ```bash
-sudo bootc upgrade
+update system
 sudo bootc status
 sudo reboot
 ```
 
-只有这时才下载并准备安装正式通道的镜像。手动安装命令默认跟踪 `bootc status` 中配置的镜像来源，日常使用应保持为本仓库的 `stable` 或 `latest`，不要切到官方镜像或 `testing`。出现问题可执行 `sudo bootc rollback` 后重启；系统回退不等于回退用户数据。
+确认系统更新并完成 sudo 授权后才下载并准备安装正式通道的镜像。统一客户端安装预览中的固定 digest，之后继续通过 `update` 检查本仓库正式发布。不要切到官方镜像或 `testing`。出现问题可执行 `sudo bootc rollback` 后重启；系统回退不等于回退用户数据。
 
 ### GitHub 设置和首次上线
 
@@ -116,7 +133,7 @@ sudo reboot
 
 ### 更新后检查
 
-构建并发布新镜像后，执行 `sudo bootc upgrade` 并重启（首次切换镜像按上面的 `bootc switch` 步骤）。然后检查：
+构建并发布新镜像后，执行 `update system` 并重启（首次切换镜像按上面的 `bootc switch` 步骤）。然后检查：
 
 ```bash
 ls -l /dev/kvm
