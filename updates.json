@@ -758,6 +758,69 @@
         "dependency_snapshot": "7450cc563723aabd4e6f46433404a6cc803a3bca8f8389060fb94474f3a546a9"
       },
       "run_url": "https://github.com/sisanwu12/zirconium-custom/actions/runs/40132203625"
+    },
+    {
+      "input_id": "e3502f6045c3badd8cd7835124dd3b7c51f139bb4f49d259942a21ea14b97646",
+      "digest": "sha256:37e3c5d306c1c7e8cc2a514150a1eb0574bd0686f22446a202ff3ff69d84c94e",
+      "tag": "candidate-20261026T050216Z-40271989369",
+      "built_at": "2026-10-26T05:04:11Z",
+      "ready_at": "2026-11-09T05:04:11Z",
+      "blocked": false,
+      "inputs": {
+        "base_digest": "sha256:be10f8f7737c67d856a0afd0b270b0b8bff47291ba115f94cfee7aec6683a646",
+        "flclash": {
+          "version": "0.9.2",
+          "sha256": "bfb0cca7216861091221b91f6f9fdb5f04641e6c1d0f858ffca19936bd5876ba",
+          "url": "https://github.com/chen08209/FlClash/releases/download/v0.9.2/FlClash-0.9.2-linux-amd64.rpm"
+        },
+        "rpm": {
+          "edk2-ovmf": [
+            "edk2-ovmf-0:20260812-8.fc44.noarch"
+          ],
+          "libnotify": [
+            "libnotify-0:0.8.9-1.fc44.x86_64"
+          ],
+          "libvirt-client": [
+            "libvirt-client-0:12.0.0-5.fc44.x86_64"
+          ],
+          "libvirt-daemon-config-network": [
+            "libvirt-daemon-config-network-0:12.0.0-5.fc44.x86_64"
+          ],
+          "libvirt-daemon-kvm": [
+            "libvirt-daemon-kvm-0:12.0.0-5.fc44.x86_64"
+          ],
+          "python3": [
+            "python3-0:3.14.8-1.fc44.x86_64"
+          ],
+          "qemu-kvm": [
+            "qemu-kvm-2:10.2.2-1.fc44.x86_64"
+          ],
+          "swtpm": [
+            "swtpm-0:0.10.2-1.fc44.x86_64"
+          ],
+          "swtpm-tools": [
+            "swtpm-tools-0:0.10.2-1.fc44.x86_64"
+          ],
+          "virt-install": [
+            "virt-install-0:5.1.0-4.fc44.noarch"
+          ],
+          "virt-manager": [
+            "virt-manager-0:5.1.0-4.fc44.noarch"
+          ],
+          "virt-viewer": [
+            "virt-viewer-0:11.0-18.fc44.x86_64"
+          ],
+          "virtiofsd": [
+            "virtiofsd-0:1.14.0-1.fc44.x86_64"
+          ],
+          "waydroid": [
+            "waydroid-0:1.6.3-1.fc44.noarch"
+          ]
+        },
+        "recipe": "20ca3431d6314ee11d0fcd7f3834220fd26b014cfa25278c0be819db0662c161",
+        "dependency_snapshot": "fee05b5952ca6aa832644e44e510c526765fc37552cb6dec36e490006066b262"
+      },
+      "run_url": "https://github.com/sisanwu12/zirconium-custom/actions/runs/40271989369"
     }
   ],
   "stable": null
