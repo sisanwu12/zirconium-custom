@@ -11,6 +11,31 @@ from . import core
 from .core import Change, capture, live, say
 
 
+def estimated_publication(item):
+    # Match build.yml's UTC cron: '23 */6 * * *', then allow 10 minutes.
+    ready = notify.parse_time(item["built_at"]).astimezone(timezone.utc) + timedelta(days=notify.WAIT_DAYS)
+    check = ready.replace(hour=(ready.hour // 6) * 6, minute=23, second=0, microsecond=0)
+    if check < ready:
+        check += timedelta(hours=6)
+    return check + timedelta(minutes=10)
+
+
+def publication_status(item, now):
+    expected = estimated_publication(item)
+    local_time = expected.astimezone().strftime("%Y-%m-%d %H:%M %Z%z")
+    seconds = (expected - now).total_seconds()
+    if seconds <= 0:
+        return f"已超过预计发布时间 {local_time}，等待云端发布 stable（尚不可安装）"
+    # Round up so the display does not reach zero before the estimated time.
+    minutes = math.ceil(seconds / 60)
+    days, minutes = divmod(minutes, 1440)
+    hours, minutes = divmod(minutes, 60)
+    observation = ("14 天观察已满；" if notify.parse_time(item["built_at"])
+                   + timedelta(days=notify.WAIT_DAYS) <= now else "")
+    return (f"{observation}预计还有 {days} 天 {hours} 小时 {minutes} 分钟发布 stable"
+            f"（预计 {local_time}）")
+
+
 def pending_candidates(state, now, current_id, built_at="", current_digest=""):
     stable = state.get("stable") or {}
     baseline = [notify.parse_time(x) for x in (built_at, stable.get("built_at")) if x and x != "local"]
@@ -21,7 +46,7 @@ def pending_candidates(state, now, current_id, built_at="", current_digest=""):
         built = notify.parse_time(item["built_at"])
         if baseline and built <= max(baseline):
             continue
-        remaining = max(0, math.ceil((built + timedelta(days=14) - now).total_seconds()))
+        remaining = max(0, math.ceil((estimated_publication(item) - now).total_seconds()))
         result.append((item, remaining))
     return sorted(result, key=lambda row: notify.parse_time(row[0]["built_at"]))
 
@@ -91,15 +116,8 @@ class System:
         now = datetime.now(timezone.utc)
         previous_inputs = old_inputs
         pending = pending_candidates(state, now, current_id, built_at, digest)
-        for item, seconds in (pending if core.VERBOSE else pending[:1]):
-            if seconds:
-                days, rem = divmod(seconds, 86400)
-                hours, rem = divmod(rem, 3600)
-                minutes = rem // 60
-                say(f"  系统候选 {item['tag']}：还有 {days} 天 {hours} 小时 {minutes} 分钟"
-                    f"（约 {math.ceil(seconds / 86400)} 天）完成 14 天观察")
-            else:
-                say(f"  系统候选 {item['tag']}：14 天已满，等待云端发布 stable（尚不可安装）")
+        for item, _ in (pending if core.VERBOSE else pending[:1]):
+            say(f"  系统候选 {item['tag']}：{publication_status(item, now)}")
             changes = image_changes(previous_inputs, item.get("inputs", {}))
             if core.VERBOSE:
                 say("    变更（首项对比本机，其后对比上一候选）：")
@@ -108,6 +126,9 @@ class System:
             previous_inputs = item.get("inputs", {})
         if not core.VERBOSE and len(pending) > 1:
             say(f"  另有 {len(pending) - 1} 个系统候选等待发布；--verbose 查看各自倒计时和变更")
+        if pending:
+            say("  发布时间按满 14 天后的下一次定时检查（UTC 每 6 小时的第 23 分钟）再加 10 分钟估算；"
+                "GitHub 调度或任务可能延迟，实际以 stable 发布为准。")
         stable = notify.available_update(state, now, current_id, built_at)
         if not stable or stable["digest"] == digest:
             return []
