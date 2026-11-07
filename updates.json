@@ -1265,18 +1265,18 @@
     }
   ],
   "stable": {
-    "input_id": "efb24fc1978a5baa05e5fe12e8417a75d13df92cce13a94d2acb19d955564f7e",
-    "digest": "sha256:9eb5ed68c4dd586755ee345e6a04bf49bad8e3d9f83f438d6cacb8c184bea7fd",
-    "tag": "candidate-20261023T050518Z-39903690460",
-    "built_at": "2026-10-23T05:06:57Z",
-    "ready_at": "2026-11-06T05:06:57Z",
+    "input_id": "a9deaf06adbb168e16fdff9b1ba97d31293ea46805768c25177d87a6f288f8d1",
+    "digest": "sha256:35be17e1cb1d6ffa37445bb380809a004fb4151f6758d2cbb1863f5cc7f3fac4",
+    "tag": "candidate-20261024T111942Z-40089326637",
+    "built_at": "2026-10-24T11:21:31Z",
+    "ready_at": "2026-11-07T11:21:31Z",
     "blocked": false,
     "inputs": {
       "base_digest": "sha256:be10f8f7737c67d856a0afd0b270b0b8bff47291ba115f94cfee7aec6683a646",
       "flclash": {
-        "version": "0.9.1",
-        "sha256": "1acef596f05417023f5a7806e96a5583f834d7a62fdee248a2b216d0128c11be",
-        "url": "https://github.com/chen08209/FlClash/releases/download/v0.9.1/FlClash-0.9.1-linux-amd64.rpm"
+        "version": "0.9.2",
+        "sha256": "bfb0cca7216861091221b91f6f9fdb5f04641e6c1d0f858ffca19936bd5876ba",
+        "url": "https://github.com/chen08209/FlClash/releases/download/v0.9.2/FlClash-0.9.2-linux-amd64.rpm"
       },
       "rpm": {
         "edk2-ovmf": [
@@ -1325,7 +1325,7 @@
       "recipe": "20ca3431d6314ee11d0fcd7f3834220fd26b014cfa25278c0be819db0662c161",
       "dependency_snapshot": "3f366a12b1f34add97101fd534e0a4aa435d66ec9e37f370fd21b6034fd97bdf"
     },
-    "run_url": "https://github.com/sisanwu12/zirconium-custom/actions/runs/39903690460",
-    "promoted_at": "2026-11-06T07:02:01Z"
+    "run_url": "https://github.com/sisanwu12/zirconium-custom/actions/runs/40089326637",
+    "promoted_at": "2026-11-07T13:19:28Z"
   }
 }
