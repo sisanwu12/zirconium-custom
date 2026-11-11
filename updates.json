@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "wait_days": 14,
+  "wait_days": 7,
   "repository": "sisanwu12/zirconium-custom",
   "candidates": [
     {
@@ -8,7 +8,7 @@
       "digest": "sha256:35be17e1cb1d6ffa37445bb380809a004fb4151f6758d2cbb1863f5cc7f3fac4",
       "tag": "candidate-20261024T111942Z-40089326637",
       "built_at": "2026-10-24T11:21:31Z",
-      "ready_at": "2026-11-07T11:21:31Z",
+      "ready_at": "2026-10-31T11:21:31Z",
       "blocked": false,
       "inputs": {
         "base_digest": "sha256:be10f8f7737c67d856a0afd0b270b0b8bff47291ba115f94cfee7aec6683a646",
@@ -71,7 +71,7 @@
       "digest": "sha256:5ad7cd185bc6ef1552c9fa1126c592e09fb803030030114249ab4a3eb981aa71",
       "tag": "candidate-20261024T210056Z-40132203625",
       "built_at": "2026-10-24T21:02:52Z",
-      "ready_at": "2026-11-07T21:02:52Z",
+      "ready_at": "2026-10-31T21:02:52Z",
       "blocked": false,
       "inputs": {
         "base_digest": "sha256:be10f8f7737c67d856a0afd0b270b0b8bff47291ba115f94cfee7aec6683a646",
@@ -134,7 +134,7 @@
       "digest": "sha256:37e3c5d306c1c7e8cc2a514150a1eb0574bd0686f22446a202ff3ff69d84c94e",
       "tag": "candidate-20261026T050216Z-40271989369",
       "built_at": "2026-10-26T05:04:11Z",
-      "ready_at": "2026-11-09T05:04:11Z",
+      "ready_at": "2026-11-02T05:04:11Z",
       "blocked": false,
       "inputs": {
         "base_digest": "sha256:be10f8f7737c67d856a0afd0b270b0b8bff47291ba115f94cfee7aec6683a646",
@@ -197,7 +197,7 @@
       "digest": "sha256:027bbf528aaa7355aadca37f657e0809f20eb320b3c7202d0868b65623a004df",
       "tag": "candidate-20261027T051852Z-40454479024",
       "built_at": "2026-10-27T05:20:36Z",
-      "ready_at": "2026-11-10T05:20:36Z",
+      "ready_at": "2026-11-03T05:20:36Z",
       "blocked": false,
       "inputs": {
         "base_digest": "sha256:be10f8f7737c67d856a0afd0b270b0b8bff47291ba115f94cfee7aec6683a646",
@@ -260,7 +260,7 @@
       "digest": "sha256:6f9ef66b481f6185816336ebc6e05aafc267ea0b2cf1b10c225ccc07d66d5f88",
       "tag": "candidate-20261027T122952Z-40503927057",
       "built_at": "2026-10-27T12:31:56Z",
-      "ready_at": "2026-11-10T12:31:56Z",
+      "ready_at": "2026-11-03T12:31:56Z",
       "blocked": false,
       "inputs": {
         "base_digest": "sha256:8d762c55d9f09938e3c734d85b51785f2e90ce607cce783a2e4f787cc455992c",
@@ -323,7 +323,7 @@
       "digest": "sha256:cdb2d34022f8536958c4c72401448fb87ad20029f21632751c26372c2010d17c",
       "tag": "candidate-20261027T222720Z-40594723461",
       "built_at": "2026-10-27T22:30:36Z",
-      "ready_at": "2026-11-10T22:30:36Z",
+      "ready_at": "2026-11-03T22:30:36Z",
       "blocked": false,
       "inputs": {
         "base_digest": "sha256:1bafeeb739be8d7fad2f1138b6af17c5fa0e33fe1719f618212d2d53502bdbed",
@@ -386,7 +386,7 @@
       "digest": "sha256:2ffdf2f140659d4de391e22f98d706f2188c35371ac7d24f7d42fb36897a0c9e",
       "tag": "candidate-20261029T054841Z-40825342662",
       "built_at": "2026-10-29T05:50:09Z",
-      "ready_at": "2026-11-12T05:50:09Z",
+      "ready_at": "2026-11-05T05:50:09Z",
       "blocked": false,
       "inputs": {
         "base_digest": "sha256:1bafeeb739be8d7fad2f1138b6af17c5fa0e33fe1719f618212d2d53502bdbed",
@@ -449,7 +449,7 @@
       "digest": "sha256:7f6d19889cc9c1b73c70798aaecc481259b49a6410936ff995733183fb9f131b",
       "tag": "candidate-20261031T214627Z-41245035770",
       "built_at": "2026-10-31T21:48:13Z",
-      "ready_at": "2026-11-14T21:48:13Z",
+      "ready_at": "2026-11-07T21:48:13Z",
       "blocked": false,
       "inputs": {
         "base_digest": "sha256:1bafeeb739be8d7fad2f1138b6af17c5fa0e33fe1719f618212d2d53502bdbed",
@@ -512,7 +512,7 @@
       "digest": "sha256:e83e3853a9d6da70417a844aa8684b962fad3631f9b2d06d230204d90665538e",
       "tag": "candidate-20261102T062946Z-41400109820",
       "built_at": "2026-11-02T06:31:40Z",
-      "ready_at": "2026-11-16T06:31:40Z",
+      "ready_at": "2026-11-09T06:31:40Z",
       "blocked": false,
       "inputs": {
         "base_digest": "sha256:1bafeeb739be8d7fad2f1138b6af17c5fa0e33fe1719f618212d2d53502bdbed",
@@ -575,7 +575,7 @@
       "digest": "sha256:4ec41bd851353d8f207414d02571b7df63f71a9e8448c19922c0f82e3d5e1a45",
       "tag": "candidate-20261103T070309Z-41593478782",
       "built_at": "2026-11-03T07:05:48Z",
-      "ready_at": "2026-11-17T07:05:48Z",
+      "ready_at": "2026-11-10T07:05:48Z",
       "blocked": false,
       "inputs": {
         "base_digest": "sha256:7c8f679fa5cfba6df4120e62a7dfa0e515c2c08ea8333d286abd920e25ab7ce3",
@@ -638,7 +638,7 @@
       "digest": "sha256:9d79dadc72dec1401768c77b0ff0012d443632ad8c6e2ce55f73a3693947ba15",
       "tag": "candidate-20261103T193949Z-41705109152",
       "built_at": "2026-11-03T19:41:43Z",
-      "ready_at": "2026-11-17T19:41:43Z",
+      "ready_at": "2026-11-10T19:41:43Z",
       "blocked": false,
       "inputs": {
         "base_digest": "sha256:35f6eb48a3c22f85bcb025af87c988b76ab3b5d944a09f40b0ffd8419d67b487",
@@ -701,7 +701,7 @@
       "digest": "sha256:d23dfdf71bba1e769519aa2dab2dafc06acdcf61de757908681ed32b9e76fffd",
       "tag": "candidate-20261104T064431Z-41787352922",
       "built_at": "2026-11-04T06:46:53Z",
-      "ready_at": "2026-11-18T06:46:53Z",
+      "ready_at": "2026-11-11T06:46:53Z",
       "blocked": false,
       "inputs": {
         "base_digest": "sha256:c8109d8c5d749d86d2b705e050e87faba28a400be38d0df65078cae000ba877e",
@@ -764,7 +764,7 @@
       "digest": "sha256:b3395ebbba34ae8ba28a2ee4859efb7d29448e1c7b8e5711171d9afd0dcc5396",
       "tag": "candidate-20261104T195614Z-41901427787",
       "built_at": "2026-11-04T19:58:20Z",
-      "ready_at": "2026-11-18T19:58:20Z",
+      "ready_at": "2026-11-11T19:58:20Z",
       "blocked": false,
       "inputs": {
         "base_digest": "sha256:73ce7a8a52e48cad8164652a7a7c238483d95748392508040990ef583cba8ac3",
@@ -827,7 +827,7 @@
       "digest": "sha256:cadfe3ecc6ab12c9bb50c25e69ffb40b0f34a4e572f392805072b88ace0d16dd",
       "tag": "candidate-20261105T070334Z-41984388016",
       "built_at": "2026-11-05T07:05:17Z",
-      "ready_at": "2026-11-19T07:05:17Z",
+      "ready_at": "2026-11-12T07:05:17Z",
       "blocked": false,
       "inputs": {
         "base_digest": "sha256:73ce7a8a52e48cad8164652a7a7c238483d95748392508040990ef583cba8ac3",
@@ -890,7 +890,7 @@
       "digest": "sha256:4b09767cfaff23dfd1dc1b0142bc97f696a30e4e2253bb2be8b307c2cccd704b",
       "tag": "candidate-20261106T070315Z-42178180566",
       "built_at": "2026-11-06T07:04:57Z",
-      "ready_at": "2026-11-20T07:04:57Z",
+      "ready_at": "2026-11-13T07:04:57Z",
       "blocked": false,
       "inputs": {
         "base_digest": "sha256:73ce7a8a52e48cad8164652a7a7c238483d95748392508040990ef583cba8ac3",
@@ -953,7 +953,7 @@
       "digest": "sha256:84bb3c616bd84c013615fa250cc0272f81f003721f1643dc2dab826c0b60d24b",
       "tag": "candidate-20261107T061619Z-42346112181",
       "built_at": "2026-11-07T06:18:04Z",
-      "ready_at": "2026-11-21T06:18:04Z",
+      "ready_at": "2026-11-14T06:18:04Z",
       "blocked": false,
       "inputs": {
         "base_digest": "sha256:73ce7a8a52e48cad8164652a7a7c238483d95748392508040990ef583cba8ac3",
@@ -1016,7 +1016,7 @@
       "digest": "sha256:63bc7a8d14be15fde3bf71435d5f3a4b59d9e2eac0e4c2cb1e40888441170227",
       "tag": "candidate-20261108T062230Z-42454330040",
       "built_at": "2026-11-08T06:24:15Z",
-      "ready_at": "2026-11-22T06:24:15Z",
+      "ready_at": "2026-11-15T06:24:15Z",
       "blocked": false,
       "inputs": {
         "base_digest": "sha256:73ce7a8a52e48cad8164652a7a7c238483d95748392508040990ef583cba8ac3",
@@ -1079,7 +1079,7 @@
       "digest": "sha256:9d2db2cced2cec1f9f47213cbd3d98dc811b213f99dc5ed1da2258fa3c312180",
       "tag": "candidate-20261109T065528Z-42575910072",
       "built_at": "2026-11-09T06:57:06Z",
-      "ready_at": "2026-11-23T06:57:06Z",
+      "ready_at": "2026-11-16T06:57:06Z",
       "blocked": false,
       "inputs": {
         "base_digest": "sha256:73ce7a8a52e48cad8164652a7a7c238483d95748392508040990ef583cba8ac3",
@@ -1142,7 +1142,7 @@
       "digest": "sha256:a645e5b625549c140f6b0b7eefab9b28fc3aaa460065cc23fef05b3a8488329c",
       "tag": "candidate-20261110T073229Z-42775839074",
       "built_at": "2026-11-10T07:34:11Z",
-      "ready_at": "2026-11-24T07:34:11Z",
+      "ready_at": "2026-11-17T07:34:11Z",
       "blocked": false,
       "inputs": {
         "base_digest": "sha256:73ce7a8a52e48cad8164652a7a7c238483d95748392508040990ef583cba8ac3",
@@ -1205,7 +1205,7 @@
       "digest": "sha256:687df6994df697c662a4a43ba27522dc0a6620dfedff88124bb09dd9c5af2a46",
       "tag": "candidate-20261110T195427Z-42889519529",
       "built_at": "2026-11-10T20:26:01Z",
-      "ready_at": "2026-11-24T20:26:01Z",
+      "ready_at": "2026-11-17T20:26:01Z",
       "blocked": false,
       "inputs": {
         "base_digest": "sha256:c7c6e7e25811e09b000c1cdf7c2df2f77a090fe5a8ddddccf63f8b20328cd087",
@@ -1269,7 +1269,7 @@
     "digest": "sha256:6f9ef66b481f6185816336ebc6e05aafc267ea0b2cf1b10c225ccc07d66d5f88",
     "tag": "candidate-20261027T122952Z-40503927057",
     "built_at": "2026-10-27T12:31:56Z",
-    "ready_at": "2026-11-10T12:31:56Z",
+    "ready_at": "2026-11-03T12:31:56Z",
     "blocked": false,
     "inputs": {
       "base_digest": "sha256:8d762c55d9f09938e3c734d85b51785f2e90ce607cce783a2e4f787cc455992c",
