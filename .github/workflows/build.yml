@@ -14,7 +14,7 @@ on:
   workflow_dispatch:
     inputs:
       force_rebuild:
-        description: Rebuild unchanged inputs (starts a new 14-day wait)
+        description: Rebuild unchanged inputs (starts a new 7-day wait)
         type: boolean
         default: false
       block_digest:

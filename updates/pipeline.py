@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Detect immutable inputs, build only on change, promote the same image after 14d."""
+"""Detect immutable inputs, build only on change, promote the same image after 7d."""
 
 import base64
 from datetime import datetime, timedelta, timezone
@@ -19,7 +19,7 @@ ROOT = Path(__file__).resolve().parent.parent
 BASE = "ghcr.io/zirconium-dev/zirconium"
 STATE_BRANCH = "update-state"
 STATE_FILE = "updates.json"
-WAIT_DAYS = 14
+WAIT_DAYS = 7
 DIGEST_RE = re.compile(r"sha256:[0-9a-f]{64}")
 
 
@@ -211,6 +211,19 @@ def recipe_hash():
                         for path in sorted(paths)})
 
 
+def apply_wait_policy(state):
+    """Apply the current wait to existing candidates without restarting their age."""
+    changed = state.get("wait_days") != WAIT_DAYS
+    state["wait_days"] = WAIT_DAYS
+    for item in [*state["candidates"], state.get("stable")]:
+        if item is None:
+            continue
+        ready_at = stamp(parse_time(item["built_at"]) + timedelta(days=WAIT_DAYS))
+        changed = changed or item.get("ready_at") != ready_at
+        item["ready_at"] = ready_at
+    return changed
+
+
 def eligible_candidate(state, now):
     eligible = [item for item in state["candidates"]
                 if not item.get("blocked", False)
@@ -237,7 +250,7 @@ def block_candidate(state, digest):
 def promote(state, image, now):
     candidate = eligible_candidate(state, now)
     if not candidate:
-        print("No new candidate has completed the 14-day wait.", flush=True)
+        print("No new candidate has completed the 7-day wait.", flush=True)
         return False
     # Retag the existing bytes. Rebuilding here would invalidate the waiting period.
     run("docker", "buildx", "imagetools", "create", "--prefer-index=false",
@@ -282,7 +295,7 @@ def build_candidate(image, inputs, input_id, repository):
 def summary(state, message):
     stable = state.get("stable")
     lines = ["## Zirconium Custom updates", "", message,
-             "", "Stable: " + (stable["tag"] if stable else "No candidate has aged 14 days yet."),
+             "", "Stable: " + (stable["tag"] if stable else "No candidate has aged 7 days yet."),
              "", "| Candidate | Built (UTC) | Eligible (UTC) | Blocked |",
              "| --- | --- | --- | --- |"]
     for item in state["candidates"][-20:]:
@@ -298,6 +311,8 @@ def main():
     image = "ghcr.io/" + repository
     github = GitHub(repository, os.environ["GH_TOKEN"])
     state = github.load_state()
+    if apply_wait_policy(state):
+        github.save_state(state)
     if os.environ.get("BLOCK_DIGEST"):
         block_candidate(state, os.environ["BLOCK_DIGEST"].strip())
         github.save_state(state)
@@ -318,7 +333,7 @@ def main():
             candidate = build_candidate(image, inputs, input_id, repository)
             state["candidates"].append(candidate)
             github.save_state(state)
-            message = "Built a candidate; its 14-day waiting period starts after the successful build."
+            message = "Built a candidate; its 7-day waiting period starts after the successful build."
         print(message, flush=True)
         summary(state, message)
     except Exception:

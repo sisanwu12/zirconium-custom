@@ -27,30 +27,49 @@ def candidate(age, number, **overrides):
     built = NOW - timedelta(days=age)
     return {"digest": "sha256:" + f"{number:064x}", "input_id": f"{number:064x}",
             "built_at": pipeline.stamp(built),
-            "ready_at": pipeline.stamp(built + timedelta(days=14)),
+            "ready_at": pipeline.stamp(built + timedelta(days=7)),
             "tag": "candidate-" + str(number), "blocked": False,
             "inputs": {"flclash": {"version": "0.8.99"}}, **overrides}
 
 
 def state(*candidates, stable=None):
-    return {"schema": 1, "repository": "example/custom", "wait_days": 14,
+    return {"schema": 1, "repository": "example/custom", "wait_days": 7,
             "candidates": list(candidates), "stable": stable}
 
 
 class PromotionTests(unittest.TestCase):
-    def test_exact_14_day_boundary(self):
-        update = candidate(14, 1)
+    def test_existing_candidates_adopt_seven_days_without_rebuilding(self):
+        update = candidate(8, 2)
+        stable = candidate(20, 1)
+        data = state(update, stable=stable)
+        data["wait_days"] = 14
+        for item in (update, stable):
+            item["ready_at"] = pipeline.stamp(pipeline.parse_time(item["built_at"])
+                                              + timedelta(days=14))
+        original = copy.deepcopy(data)
+        self.assertTrue(pipeline.apply_wait_policy(data))
+        self.assertEqual(data["wait_days"], 7)
+        for item, old in zip((update, stable), (original["candidates"][0], original["stable"])):
+            self.assertEqual(item["ready_at"], pipeline.stamp(pipeline.parse_time(item["built_at"])
+                                                           + timedelta(days=7)))
+            for key in ("digest", "input_id", "built_at", "blocked"):
+                self.assertEqual(item[key], old[key])
+        self.assertEqual(pipeline.eligible_candidate(data, NOW), update)
+        self.assertFalse(pipeline.apply_wait_policy(data))
+
+    def test_exact_7_day_boundary(self):
+        update = candidate(7, 1)
         data = state(update)
         self.assertIsNone(pipeline.eligible_candidate(data, NOW - timedelta(seconds=1)))
         self.assertEqual(pipeline.eligible_candidate(data, NOW), update)
 
     def test_frequent_releases_do_not_reset_wait(self):
         old = candidate(15, 1)
-        data = state(old, candidate(13, 2), candidate(1, 3))
+        data = state(old, candidate(6, 2), candidate(1, 3))
         self.assertEqual(pipeline.eligible_candidate(data, NOW), old)
 
     def test_latest_aged_candidate_is_selected(self):
-        newest_aged = candidate(14, 3)
+        newest_aged = candidate(7, 3)
         data = state(candidate(30, 1), candidate(20, 2), newest_aged, candidate(2, 4))
         self.assertEqual(pipeline.eligible_candidate(data, NOW), newest_aged)
 
@@ -70,7 +89,7 @@ class PromotionTests(unittest.TestCase):
             pipeline.block_candidate(state(stable, stable=stable), stable["digest"])
 
     def test_promotion_reuses_digest_without_building(self):
-        update = candidate(14, 1)
+        update = candidate(7, 1)
         data = state(update)
         with patch.object(pipeline, "run") as run:
             self.assertTrue(pipeline.promote(data, "ghcr.io/example/custom", NOW))
@@ -164,7 +183,7 @@ class DetectionTests(unittest.TestCase):
 
 class NotificationTests(unittest.TestCase):
     def test_notification_cli_only_runs_notify_send(self):
-        update = candidate(14, 1)
+        update = candidate(7, 1)
         with tempfile.TemporaryDirectory() as cache, \
              patch.dict(os.environ, {"XDG_CACHE_HOME": cache}), \
              patch("sys.argv", ["notify.py", "--notify", "--repository", "example/custom"]), \
@@ -176,7 +195,7 @@ class NotificationTests(unittest.TestCase):
             self.assertEqual(run.call_args.args[0][0], "notify-send")
 
     def test_unaged_or_blocked_stable_never_notified(self):
-        for update in (candidate(13, 1), candidate(20, 1, blocked=True)):
+        for update in (candidate(6, 1), candidate(20, 1, blocked=True)):
             self.assertIsNone(notify.available_update(state(update, stable=update), NOW, "old"))
 
     def test_ready_at_cannot_bypass_wait(self):
@@ -184,7 +203,7 @@ class NotificationTests(unittest.TestCase):
         self.assertIsNone(notify.available_update(state(update, stable=update), NOW, "old"))
 
     def test_installed_version_not_notified(self):
-        update = candidate(14, 1)
+        update = candidate(7, 1)
         self.assertIsNone(notify.available_update(state(update, stable=update), NOW, update["input_id"]))
 
     def test_newer_installed_testing_image_not_downgraded(self):
@@ -193,7 +212,9 @@ class NotificationTests(unittest.TestCase):
                                                  pipeline.stamp(NOW - timedelta(days=1))))
 
     def test_eligible_update_is_notified(self):
-        update = candidate(14, 1)
+        update = candidate(7, 1)
+        self.assertIsNone(notify.available_update(state(update, stable=update),
+                                                NOW - timedelta(seconds=1), "old"))
         self.assertEqual(notify.available_update(state(update, stable=update), NOW, "old"), update)
 
     def test_repeat_notification_at_most_once_per_day(self):

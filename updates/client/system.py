@@ -30,7 +30,7 @@ def publication_status(item, now):
     minutes = math.ceil(seconds / 60)
     days, minutes = divmod(minutes, 1440)
     hours, minutes = divmod(minutes, 60)
-    observation = ("14 天观察已满；" if notify.parse_time(item["built_at"])
+    observation = ("7 天观察已满；" if notify.parse_time(item["built_at"])
                    + timedelta(days=notify.WAIT_DAYS) <= now else "")
     return (f"{observation}预计还有 {days} 天 {hours} 小时 {minutes} 分钟发布 stable"
             f"（预计 {local_time}）")
@@ -127,7 +127,7 @@ class System:
         if not core.VERBOSE and len(pending) > 1:
             say(f"  另有 {len(pending) - 1} 个系统候选等待发布；--verbose 查看各自倒计时和变更")
         if pending:
-            say("  发布时间按满 14 天后的下一次定时检查（UTC 每 6 小时的第 23 分钟）再加 10 分钟估算；"
+            say("  发布时间按满 7 天后的下一次定时检查（UTC 每 6 小时的第 23 分钟）再加 10 分钟估算；"
                 "GitHub 调度或任务可能延迟，实际以 stable 发布为准。")
         stable = notify.available_update(state, now, current_id, built_at)
         if not stable or stable["digest"] == digest:

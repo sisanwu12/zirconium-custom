@@ -16,7 +16,7 @@ import urllib.request
 
 INFO = Path("/usr/share/zirconium-custom")
 DEFAULT_REPOSITORY = "sisanwu12/zirconium-custom"
-WAIT_DAYS = 14
+WAIT_DAYS = 7
 
 
 def read_info(name, default=""):
@@ -84,10 +84,10 @@ def main():
     state = fetch_state(args.repository)
     update = available_update(state, now, read_info("update-id"), read_info("built-at"))
     if not update:
-        print("没有需要安装的已满 14 天的更新。")
+        print("没有需要安装的已满 7 天的更新。")
         return
     local_time = parse_time(update["built_at"]).astimezone().strftime("%Y-%m-%d %H:%M")
-    message = (f"定制镜像 {update['tag']} 已观察至少 14 天。\n"
+    message = (f"定制镜像 {update['tag']} 已观察至少 7 天。\n"
                f"构建时间：{local_time}\n"
                f"FlClash：{update['inputs']['flclash']['version']}\n"
                "请在终端执行 update system，预览并单独确认系统更新，完成后自行重启。")

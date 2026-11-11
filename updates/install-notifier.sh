@@ -10,11 +10,11 @@ Description=Notify about aged Zirconium Custom updates (no installation)
 
 [Service]
 Type=oneshot
-ExecStart=/usr/bin/bash -c 'if test -x /usr/bin/zirconium-custom-update-check; then exec /usr/bin/zirconium-custom-update-check --notify; else exec /usr/bin/python3 "%h/.local/lib/zirconium-custom/notify.py" --notify; fi'
+ExecStart=/usr/bin/bash -c 'if test -f "%h/.local/lib/zirconium-updater/current/notify.py"; then exec /usr/bin/python3 "%h/.local/lib/zirconium-updater/current/notify.py" --notify; elif test -x /usr/bin/zirconium-custom-update-check; then exec /usr/bin/zirconium-custom-update-check --notify; else exec /usr/bin/python3 "%h/.local/lib/zirconium-custom/notify.py" --notify; fi'
 TimeoutStartSec=90
 EOF
 install -m644 "$script_dir/systemd/zirconium-custom-update-notify.timer" \
   "$HOME/.config/systemd/user/zirconium-custom-update-notify.timer"
 systemctl --user daemon-reload
 systemctl --user enable --now zirconium-custom-update-notify.timer
-printf '%s\n' '通知已启用；不会自动安装或重启。首次成功构建后，候选镜像需要等待 14 天。'
+printf '%s\n' '通知已启用；不会自动安装或重启。首次成功构建后，候选镜像需要等待 7 天。'

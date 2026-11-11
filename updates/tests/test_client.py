@@ -115,10 +115,10 @@ class WorkflowTests(unittest.TestCase):
 
 class SystemTests(unittest.TestCase):
     def test_countdown_boundaries_and_blocked(self):
-        items = [candidate(13, 1), candidate(1, 2), candidate(12, 3, blocked=True)]
+        items = [candidate(6, 1), candidate(1, 2), candidate(12, 3, blocked=True)]
         result = system.pending_candidates({"candidates": items}, NOW, "old")
-        self.assertEqual([seconds for _, seconds in result], [86400 + 1980, 13 * 86400 + 1980])
-        item = candidate(14)
+        self.assertEqual([seconds for _, seconds in result], [86400 + 1980, 6 * 86400 + 1980])
+        item = candidate(7)
         expected = NOW + timedelta(minutes=33)
         self.assertEqual(system.pending_candidates({"candidates": [item]}, NOW, "old")[0][1], 1980)
         self.assertEqual(system.pending_candidates({"candidates": [item]}, expected, "old")[0][1], 0)
@@ -135,15 +135,15 @@ class SystemTests(unittest.TestCase):
         ]
         for ready_at, expected in cases:
             with self.subTest(ready_at=ready_at):
-                built = system.notify.parse_time(ready_at) - timedelta(days=14)
-                item = candidate(14, built_at=built.isoformat())
+                built = system.notify.parse_time(ready_at) - timedelta(days=7)
+                item = candidate(7, built_at=built.isoformat())
                 self.assertEqual(system.estimated_publication(item), system.notify.parse_time(expected))
 
     def test_publication_display_rounds_up_and_reports_delay_without_resetting(self):
-        item = candidate(14)
+        item = candidate(7)
         expected = NOW + timedelta(minutes=33)
         before = system.publication_status(item, expected - timedelta(seconds=1))
-        self.assertIn("14 天观察已满", before)
+        self.assertIn("7 天观察已满", before)
         self.assertIn("预计还有 0 天 0 小时 1 分钟发布 stable", before)
         self.assertIn(expected.astimezone().strftime("%Y-%m-%d %H:%M %Z%z"), before)
         for now in (expected, expected + timedelta(hours=7)):
@@ -156,14 +156,14 @@ class SystemTests(unittest.TestCase):
                 self.assertIsNone(system.notify.available_update({"candidates": [item]}, now, "old"))
 
     def test_before_observation_ends_display_counts_down_to_publication(self):
-        status = system.publication_status(candidate(13), NOW)
+        status = system.publication_status(candidate(6), NOW)
         self.assertIn("预计还有 1 天 0 小时 33 分钟发布 stable", status)
-        self.assertNotIn("14 天观察已满", status)
+        self.assertNotIn("7 天观察已满", status)
 
     def test_forged_ready_date_does_not_shorten_wait(self):
         item = candidate(1, ready_at="2000-01-01T00:00:00Z")
         result = system.pending_candidates({"candidates": [item]}, NOW, "old")
-        self.assertEqual(result[0][1], 13 * 86400 + 1980)
+        self.assertEqual(result[0][1], 6 * 86400 + 1980)
 
     def test_installed_and_older_candidates_do_not_count_down(self):
         a, b, c = candidate(12, 1), candidate(10, 2), candidate(1, 3)
