@@ -1265,22 +1265,22 @@
     }
   ],
   "stable": {
-    "input_id": "1a5947749dfb7ea1fcaf0c96dfa4630b96985fa97531402bd5f5a5ee9546fb55",
-    "digest": "sha256:d23dfdf71bba1e769519aa2dab2dafc06acdcf61de757908681ed32b9e76fffd",
-    "tag": "candidate-20261104T064431Z-41787352922",
-    "built_at": "2026-11-04T06:46:53Z",
-    "ready_at": "2026-11-11T06:46:53Z",
+    "input_id": "87bc3f2da0b5530f5c5a10ed6e4566763e022753a532a12df596909382298207",
+    "digest": "sha256:cadfe3ecc6ab12c9bb50c25e69ffb40b0f34a4e572f392805072b88ace0d16dd",
+    "tag": "candidate-20261105T070334Z-41984388016",
+    "built_at": "2026-11-05T07:05:17Z",
+    "ready_at": "2026-11-12T07:05:17Z",
     "blocked": false,
     "inputs": {
-      "base_digest": "sha256:c8109d8c5d749d86d2b705e050e87faba28a400be38d0df65078cae000ba877e",
+      "base_digest": "sha256:73ce7a8a52e48cad8164652a7a7c238483d95748392508040990ef583cba8ac3",
       "flclash": {
-        "version": "0.9.2",
-        "sha256": "bfb0cca7216861091221b91f6f9fdb5f04641e6c1d0f858ffca19936bd5876ba",
-        "url": "https://github.com/chen08209/FlClash/releases/download/v0.9.2/FlClash-0.9.2-linux-amd64.rpm"
+        "version": "0.9.3",
+        "sha256": "42fbe1f9e41d9929ed95e869c05e6b5ac4dbb70b12afbaef0d00de2fd4bc4db5",
+        "url": "https://github.com/chen08209/FlClash/releases/download/v0.9.3/FlClash-0.9.3-linux-amd64.rpm"
       },
       "rpm": {
         "edk2-ovmf": [
-          "edk2-ovmf-0:20260812-9.fc45.noarch"
+          "edk2-ovmf-0:20260812-10.fc45.noarch"
         ],
         "libnotify": [
           "libnotify-0:0.8.9-1.fc45.x86_64"
@@ -1323,9 +1323,9 @@
         ]
       },
       "recipe": "6a95d15c022e04d960333ef5c1bf730a44737bf2442fa8c5b05d8e8a55a792ef",
-      "dependency_snapshot": "ee138bd9a26dd915fb8d29e1ebdfda334662c5b43845f18fc1c48ec35eb15a9d"
+      "dependency_snapshot": "8aa59db5370cc9e30e7d3a75779cb7a06d6aaf8964d588a74062d8f0fccb53c8"
     },
-    "run_url": "https://github.com/sisanwu12/zirconium-custom/actions/runs/41787352922",
-    "promoted_at": "2026-11-11T06:48:45Z"
+    "run_url": "https://github.com/sisanwu12/zirconium-custom/actions/runs/41984388016",
+    "promoted_at": "2026-11-12T07:26:15Z"
   }
 }
