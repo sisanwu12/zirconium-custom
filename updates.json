@@ -1265,11 +1265,11 @@
     }
   ],
   "stable": {
-    "input_id": "9ce8a936f0781a0e4f3aa22d044c09639b5365888b358c9bd2c929d04feebb7c",
-    "digest": "sha256:4b09767cfaff23dfd1dc1b0142bc97f696a30e4e2253bb2be8b307c2cccd704b",
-    "tag": "candidate-20261106T070315Z-42178180566",
-    "built_at": "2026-11-06T07:04:57Z",
-    "ready_at": "2026-11-13T07:04:57Z",
+    "input_id": "945b81b55dfba7db01cdda2466ee482807c68b9e083c3e8ea9e1efed28847a22",
+    "digest": "sha256:84bb3c616bd84c013615fa250cc0272f81f003721f1643dc2dab826c0b60d24b",
+    "tag": "candidate-20261107T061619Z-42346112181",
+    "built_at": "2026-11-07T06:18:04Z",
+    "ready_at": "2026-11-14T06:18:04Z",
     "blocked": false,
     "inputs": {
       "base_digest": "sha256:73ce7a8a52e48cad8164652a7a7c238483d95748392508040990ef583cba8ac3",
@@ -1323,9 +1323,9 @@
         ]
       },
       "recipe": "6a95d15c022e04d960333ef5c1bf730a44737bf2442fa8c5b05d8e8a55a792ef",
-      "dependency_snapshot": "737e9ef4eb0f33f2031448448d3e9fe2da41dd8978f1914081a001a87bda2a2a"
+      "dependency_snapshot": "63a6747e9ade464862232dad96651b4b798337294e261e7941523342b3535e64"
     },
-    "run_url": "https://github.com/sisanwu12/zirconium-custom/actions/runs/42178180566",
-    "promoted_at": "2026-11-13T19:53:37Z"
+    "run_url": "https://github.com/sisanwu12/zirconium-custom/actions/runs/42346112181",
+    "promoted_at": "2026-11-14T06:45:35Z"
   }
 }
