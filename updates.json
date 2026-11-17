@@ -1265,11 +1265,11 @@
     }
   ],
   "stable": {
-    "input_id": "b126acaf3376303d072182324ca7ab1922c59471f72042f6d889f7ee5effc1b8",
-    "digest": "sha256:9d2db2cced2cec1f9f47213cbd3d98dc811b213f99dc5ed1da2258fa3c312180",
-    "tag": "candidate-20261109T065528Z-42575910072",
-    "built_at": "2026-11-09T06:57:06Z",
-    "ready_at": "2026-11-16T06:57:06Z",
+    "input_id": "015eb06379bacc93e0110b2678a10a9bc833b6879ce991780b48af11e43c5f74",
+    "digest": "sha256:a645e5b625549c140f6b0b7eefab9b28fc3aaa460065cc23fef05b3a8488329c",
+    "tag": "candidate-20261110T073229Z-42775839074",
+    "built_at": "2026-11-10T07:34:11Z",
+    "ready_at": "2026-11-17T07:34:11Z",
     "blocked": false,
     "inputs": {
       "base_digest": "sha256:73ce7a8a52e48cad8164652a7a7c238483d95748392508040990ef583cba8ac3",
@@ -1295,7 +1295,7 @@
           "libvirt-daemon-kvm-0:12.6.0-2.fc45.x86_64"
         ],
         "python3": [
-          "python3-0:3.15.0-1.fc45.x86_64"
+          "python3-0:3.15.2-1.fc45.x86_64"
         ],
         "qemu-kvm": [
           "qemu-kvm-2:11.1.3-1.fc45.x86_64"
@@ -1323,9 +1323,9 @@
         ]
       },
       "recipe": "6a95d15c022e04d960333ef5c1bf730a44737bf2442fa8c5b05d8e8a55a792ef",
-      "dependency_snapshot": "1cc8d8ef7d204c40df6764a9723018fec2187c16ab7f2cdf100b8569daf300a4"
+      "dependency_snapshot": "542c0ba9f39df97297e51d81ffeb39b4e1b4d9507693991e436879cd7c0c16de"
     },
-    "run_url": "https://github.com/sisanwu12/zirconium-custom/actions/runs/42575910072",
-    "promoted_at": "2026-11-16T22:21:44Z"
+    "run_url": "https://github.com/sisanwu12/zirconium-custom/actions/runs/42775839074",
+    "promoted_at": "2026-11-17T08:09:52Z"
   }
 }
