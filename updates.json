@@ -1265,11 +1265,11 @@
     }
   ],
   "stable": {
-    "input_id": "df2f1f5b7251410b8395dd770977ec076657ece10dfcd4f5a490806135bc94a4",
-    "digest": "sha256:687df6994df697c662a4a43ba27522dc0a6620dfedff88124bb09dd9c5af2a46",
-    "tag": "candidate-20261110T195427Z-42889519529",
-    "built_at": "2026-11-10T20:26:01Z",
-    "ready_at": "2026-11-17T20:26:01Z",
+    "input_id": "3495be10aeba83bcd20b38f9101159efeb87f68adc7bb732c3bd3e546944bbf4",
+    "digest": "sha256:e0ea9a5f069a570a97d2b4a9652416ae6b49c35ce6d72b3bb838bf9a426b5387",
+    "tag": "candidate-20261111T012619Z-42938681827",
+    "built_at": "2026-11-11T01:27:59Z",
+    "ready_at": "2026-11-18T01:27:59Z",
     "blocked": false,
     "inputs": {
       "base_digest": "sha256:c7c6e7e25811e09b000c1cdf7c2df2f77a090fe5a8ddddccf63f8b20328cd087",
@@ -1322,10 +1322,10 @@
           "waydroid-0:1.6.3-2.fc45.noarch"
         ]
       },
-      "recipe": "6a95d15c022e04d960333ef5c1bf730a44737bf2442fa8c5b05d8e8a55a792ef",
+      "recipe": "ddf3fccf8327522c6677c1914f454be0f98991795edcaab0c78071d0c760eb32",
       "dependency_snapshot": "542c0ba9f39df97297e51d81ffeb39b4e1b4d9507693991e436879cd7c0c16de"
     },
-    "run_url": "https://github.com/sisanwu12/zirconium-custom/actions/runs/42889519529",
-    "promoted_at": "2026-11-17T21:06:15Z"
+    "run_url": "https://github.com/sisanwu12/zirconium-custom/actions/runs/42938681827",
+    "promoted_at": "2026-11-18T07:43:28Z"
   }
 }
