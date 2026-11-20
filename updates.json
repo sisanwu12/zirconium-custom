@@ -1265,11 +1265,11 @@
     }
   ],
   "stable": {
-    "input_id": "f721b36a2769dae32f900a344b9272a8c07203d1551fc8bc60d4768ef471545e",
-    "digest": "sha256:53dda78c21c63e40691fdab4bfb9e1fed06334c7feced77584c64d97202a155b",
-    "tag": "candidate-20261112T072806Z-43175228090",
-    "built_at": "2026-11-12T07:29:41Z",
-    "ready_at": "2026-11-19T07:29:41Z",
+    "input_id": "0d3faf9ce0ddd6b1c7a4fcc1a4ada1849d3e66b9f83416f85c19c543fc305d78",
+    "digest": "sha256:9f7a7e5f8a8f0d90ad46d769b86869a833d5c965a201ccf512a156619153ecc4",
+    "tag": "candidate-20261113T065920Z-43382293943",
+    "built_at": "2026-11-13T07:01:22Z",
+    "ready_at": "2026-11-20T07:01:22Z",
     "blocked": false,
     "inputs": {
       "base_digest": "sha256:c7c6e7e25811e09b000c1cdf7c2df2f77a090fe5a8ddddccf63f8b20328cd087",
@@ -1286,13 +1286,13 @@
           "libnotify-0:0.8.9-1.fc45.x86_64"
         ],
         "libvirt-client": [
-          "libvirt-client-0:12.6.0-2.fc45.x86_64"
+          "libvirt-client-0:12.6.0-4.fc45.x86_64"
         ],
         "libvirt-daemon-config-network": [
-          "libvirt-daemon-config-network-0:12.6.0-2.fc45.x86_64"
+          "libvirt-daemon-config-network-0:12.6.0-4.fc45.x86_64"
         ],
         "libvirt-daemon-kvm": [
-          "libvirt-daemon-kvm-0:12.6.0-2.fc45.x86_64"
+          "libvirt-daemon-kvm-0:12.6.0-4.fc45.x86_64"
         ],
         "python3": [
           "python3-0:3.15.2-1.fc45.x86_64"
@@ -1323,9 +1323,9 @@
         ]
       },
       "recipe": "ddf3fccf8327522c6677c1914f454be0f98991795edcaab0c78071d0c760eb32",
-      "dependency_snapshot": "1469c433de6592d17ac0aa4f0975d143d5652852f49801cc1d54c65a77f011a6"
+      "dependency_snapshot": "33778da7a224721592916aa1f120df45ee6dd83875d5f227a26d984b510957b9"
     },
-    "run_url": "https://github.com/sisanwu12/zirconium-custom/actions/runs/43175228090",
-    "promoted_at": "2026-11-19T07:40:14Z"
+    "run_url": "https://github.com/sisanwu12/zirconium-custom/actions/runs/43382293943",
+    "promoted_at": "2026-11-20T07:31:33Z"
   }
 }
