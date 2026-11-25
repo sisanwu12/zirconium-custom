@@ -1265,14 +1265,14 @@
     }
   ],
   "stable": {
-    "input_id": "12d4b2135ada1bf2c0b176ed52f5fe71025d8f0cc1e101eb6ff124e306a5bff2",
-    "digest": "sha256:83e84e6ee1a3328a2e3dd959ea46c6325d8ff5390e158a431ec8dfc8b9529e22",
-    "tag": "candidate-20261117T210802Z-44176225091",
-    "built_at": "2026-11-17T21:10:12Z",
-    "ready_at": "2026-11-24T21:10:12Z",
+    "input_id": "e056b8eecaafa7ebf664053bee1c7494fa2f2e9d74767bab6bde260e5e989e5b",
+    "digest": "sha256:4b4f42a2e72d97d209409b62c2a98d0c728e2b840ac128b28c28a412e37d04ba",
+    "tag": "candidate-20261118T074459Z-44261075771",
+    "built_at": "2026-11-18T07:47:03Z",
+    "ready_at": "2026-11-25T07:47:03Z",
     "blocked": false,
     "inputs": {
-      "base_digest": "sha256:1ca7cacf912331b0bf01289ea5bed9c3706f4747d0ebf24753cdbd1af1d69170",
+      "base_digest": "sha256:a2abbd0b94e4682ef05c4ed47f15a635653cf3110322fd08789e4c7598202bd7",
       "flclash": {
         "version": "0.9.3",
         "sha256": "42fbe1f9e41d9929ed95e869c05e6b5ac4dbb70b12afbaef0d00de2fd4bc4db5",
@@ -1323,9 +1323,9 @@
         ]
       },
       "recipe": "ddf3fccf8327522c6677c1914f454be0f98991795edcaab0c78071d0c760eb32",
-      "dependency_snapshot": "2b31d50542a069a2450fb22b2f921e64498efe0c38239d3dac54d06b43c60b91"
+      "dependency_snapshot": "88d443351ded749db57a488e1f1b230f43a1a762f1d1d5ef35d6fbb02f8c0aee"
     },
-    "run_url": "https://github.com/sisanwu12/zirconium-custom/actions/runs/44176225091",
-    "promoted_at": "2026-11-24T22:37:37Z"
+    "run_url": "https://github.com/sisanwu12/zirconium-custom/actions/runs/44261075771",
+    "promoted_at": "2026-11-25T08:52:22Z"
   }
 }
