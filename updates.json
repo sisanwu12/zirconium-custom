@@ -4,69 +4,6 @@
   "repository": "sisanwu12/zirconium-custom",
   "candidates": [
     {
-      "input_id": "9ce8a936f0781a0e4f3aa22d044c09639b5365888b358c9bd2c929d04feebb7c",
-      "digest": "sha256:4b09767cfaff23dfd1dc1b0142bc97f696a30e4e2253bb2be8b307c2cccd704b",
-      "tag": "candidate-20261106T070315Z-42178180566",
-      "built_at": "2026-11-06T07:04:57Z",
-      "ready_at": "2026-11-13T07:04:57Z",
-      "blocked": false,
-      "inputs": {
-        "base_digest": "sha256:73ce7a8a52e48cad8164652a7a7c238483d95748392508040990ef583cba8ac3",
-        "flclash": {
-          "version": "0.9.3",
-          "sha256": "42fbe1f9e41d9929ed95e869c05e6b5ac4dbb70b12afbaef0d00de2fd4bc4db5",
-          "url": "https://github.com/chen08209/FlClash/releases/download/v0.9.3/FlClash-0.9.3-linux-amd64.rpm"
-        },
-        "rpm": {
-          "edk2-ovmf": [
-            "edk2-ovmf-0:20260812-10.fc45.noarch"
-          ],
-          "libnotify": [
-            "libnotify-0:0.8.9-1.fc45.x86_64"
-          ],
-          "libvirt-client": [
-            "libvirt-client-0:12.6.0-2.fc45.x86_64"
-          ],
-          "libvirt-daemon-config-network": [
-            "libvirt-daemon-config-network-0:12.6.0-2.fc45.x86_64"
-          ],
-          "libvirt-daemon-kvm": [
-            "libvirt-daemon-kvm-0:12.6.0-2.fc45.x86_64"
-          ],
-          "python3": [
-            "python3-0:3.15.0-1.fc45.x86_64"
-          ],
-          "qemu-kvm": [
-            "qemu-kvm-2:11.1.3-1.fc45.x86_64"
-          ],
-          "swtpm": [
-            "swtpm-0:0.10.2-1.fc45.x86_64"
-          ],
-          "swtpm-tools": [
-            "swtpm-tools-0:0.10.2-1.fc45.x86_64"
-          ],
-          "virt-install": [
-            "virt-install-0:5.1.0-5.fc45.noarch"
-          ],
-          "virt-manager": [
-            "virt-manager-0:5.1.0-5.fc45.noarch"
-          ],
-          "virt-viewer": [
-            "virt-viewer-0:11.0-20.fc45.x86_64"
-          ],
-          "virtiofsd": [
-            "virtiofsd-0:1.14.0-2.fc45.x86_64"
-          ],
-          "waydroid": [
-            "waydroid-0:1.6.3-2.fc45.noarch"
-          ]
-        },
-        "recipe": "6a95d15c022e04d960333ef5c1bf730a44737bf2442fa8c5b05d8e8a55a792ef",
-        "dependency_snapshot": "737e9ef4eb0f33f2031448448d3e9fe2da41dd8978f1914081a001a87bda2a2a"
-      },
-      "run_url": "https://github.com/sisanwu12/zirconium-custom/actions/runs/42178180566"
-    },
-    {
       "input_id": "945b81b55dfba7db01cdda2466ee482807c68b9e083c3e8ea9e1efed28847a22",
       "digest": "sha256:84bb3c616bd84c013615fa250cc0272f81f003721f1643dc2dab826c0b60d24b",
       "tag": "candidate-20261107T061619Z-42346112181",
@@ -1262,6 +1199,69 @@
         "dependency_snapshot": "996ca9cd97e38f4919aa4f344c1601d07710ac5647d270c52d5ee0f3ad8f7823"
       },
       "run_url": "https://github.com/sisanwu12/zirconium-custom/actions/runs/45502636525"
+    },
+    {
+      "input_id": "d789e137a535f4cf47566e6920a59798b9edaadc6a03e2a61b251f41335f5cb2",
+      "digest": "sha256:f3ddcdd85167e31e9197350c409aea49c5388e8e6583a62c6ecce79f9837e496",
+      "tag": "candidate-20261126T084015Z-45784860234",
+      "built_at": "2026-11-26T08:41:58Z",
+      "ready_at": "2026-12-03T08:41:58Z",
+      "blocked": false,
+      "inputs": {
+        "base_digest": "sha256:c1b7dfad02c485fcc7cca145107d23d54ac6e43ee038042d5620ca79b76f0381",
+        "flclash": {
+          "version": "0.9.5",
+          "sha256": "3836c81bcd58ebb3cf555fd4b39262d013d6354a1562b8554ec33ac01a92cee2",
+          "url": "https://github.com/chen08209/FlClash/releases/download/v0.9.5/FlClash-0.9.5-linux-amd64.rpm"
+        },
+        "rpm": {
+          "edk2-ovmf": [
+            "edk2-ovmf-0:20260812-12.fc45.noarch"
+          ],
+          "libnotify": [
+            "libnotify-0:0.8.9-1.fc45.x86_64"
+          ],
+          "libvirt-client": [
+            "libvirt-client-0:12.6.0-4.fc45.x86_64"
+          ],
+          "libvirt-daemon-config-network": [
+            "libvirt-daemon-config-network-0:12.6.0-4.fc45.x86_64"
+          ],
+          "libvirt-daemon-kvm": [
+            "libvirt-daemon-kvm-0:12.6.0-4.fc45.x86_64"
+          ],
+          "python3": [
+            "python3-0:3.15.2-1.fc45.x86_64"
+          ],
+          "qemu-kvm": [
+            "qemu-kvm-2:11.1.3-1.fc45.x86_64"
+          ],
+          "swtpm": [
+            "swtpm-0:0.10.2-1.fc45.x86_64"
+          ],
+          "swtpm-tools": [
+            "swtpm-tools-0:0.10.2-1.fc45.x86_64"
+          ],
+          "virt-install": [
+            "virt-install-0:5.1.0-5.fc45.noarch"
+          ],
+          "virt-manager": [
+            "virt-manager-0:5.1.0-5.fc45.noarch"
+          ],
+          "virt-viewer": [
+            "virt-viewer-0:11.0-20.fc45.x86_64"
+          ],
+          "virtiofsd": [
+            "virtiofsd-0:1.14.0-2.fc45.x86_64"
+          ],
+          "waydroid": [
+            "waydroid-0:1.6.3-2.fc45.noarch"
+          ]
+        },
+        "recipe": "ddf3fccf8327522c6677c1914f454be0f98991795edcaab0c78071d0c760eb32",
+        "dependency_snapshot": "1690de1bf8820e6a22abfd17c7a743b5018762ebfad0f04400964ac65e2a16b1"
+      },
+      "run_url": "https://github.com/sisanwu12/zirconium-custom/actions/runs/45784860234"
     }
   ],
   "stable": {
